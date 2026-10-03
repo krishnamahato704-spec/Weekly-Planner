@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Download, Upload, RefreshCw, Check, AlertCircle } from 'lucide-react';
 import { NcertProgressStore } from '../utils/ncertData';
+import { useTimeout } from '../hooks/useTimeout';
 
 interface NcertBackupModalProps {
   isOpen: boolean;
@@ -19,6 +20,10 @@ export const NcertBackupModal: React.FC<NcertBackupModalProps> = ({
 }) => {
   const [importText, setImportText] = useState('');
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const { schedule, cancel } = useTimeout();
+  useEffect(() => {
+    if (!isOpen) cancel();
+  }, [isOpen, cancel]);
 
   if (!isOpen) return null;
 
@@ -54,7 +59,7 @@ export const NcertBackupModal: React.FC<NcertBackupModalProps> = ({
       }
       onImportProgress(storeToImport);
       setImportStatus({ type: 'success', message: 'Progress imported successfully!' });
-      setTimeout(() => {
+      schedule(() => {
         onClose();
         setImportStatus(null);
         setImportText('');

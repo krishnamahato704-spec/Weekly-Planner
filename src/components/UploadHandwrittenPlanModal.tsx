@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   X, 
   Upload, 
@@ -55,6 +55,19 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
   const [targetSundayDate, setTargetSundayDate] = useState('2026-10-04'); // Next Sunday
   const [customGoal, setCustomGoal] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const readerRef = useRef<FileReader | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsScanning(false);
+      return;
+    }
+    return () => {
+      readerRef.current?.abort();
+      requestRef.current?.abort();
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -66,19 +79,35 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
       setErrorMessage('Please upload a valid image file (JPG, PNG, WEBP).');
       return;
     }
+    // Base64 adds about a third to the file size; leave room in the 25 MB API body limit.
+    if (file.size > 16 * 1024 * 1024) {
+      setErrorMessage('Please choose an image smaller than 16 MB.');
+      return;
+    }
+
+    readerRef.current?.abort();
+    requestRef.current?.abort();
+    setIsScanning(false);
+    setImagePreview(null);
+    setParsedData(null);
 
     setErrorMessage(null);
     setImageFile(file);
 
     const reader = new FileReader();
+    readerRef.current = reader;
     reader.onload = () => {
       setImagePreview(reader.result as string);
     };
+    reader.onerror = () => setErrorMessage('The image could not be read. Please choose it again.');
     reader.readAsDataURL(file);
   };
 
   const handleScanPlan = async () => {
-    if (!imagePreview) return;
+    if (!imagePreview || isScanning) return;
+    requestRef.current?.abort();
+    const controller = new AbortController();
+    requestRef.current = controller;
 
     setIsScanning(true);
     setErrorMessage(null);
@@ -86,6 +115,7 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
     try {
       const res = await fetch('/api/ai/parse-handwritten-plan', {
         method: 'POST',
+        signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           imageBase64: imagePreview,
@@ -95,6 +125,7 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
       });
 
       const data = await res.json();
+      if (controller.signal.aborted) return;
 
       if (!res.ok || data.error) {
         throw new Error(data.error || 'Failed to scan handwritten plan');
@@ -116,18 +147,23 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
         throw new Error('No tasks could be recognized in this image. Please ensure the handwriting is legible.');
       }
     } catch (err: any) {
+      if (controller.signal.aborted) return;
       console.error(err);
       setErrorMessage(err.message || 'Error communicating with AI transcription server.');
     } finally {
-      setIsScanning(false);
+      if (requestRef.current === controller && !controller.signal.aborted) {
+        requestRef.current = null;
+        setIsScanning(false);
+      }
     }
   };
 
   const handleToggleTask = (index: number) => {
-    if (!parsedData) return;
-    const nextTasks = [...parsedData.tasks];
-    nextTasks[index].selected = !nextTasks[index].selected;
-    setParsedData({ ...parsedData, tasks: nextTasks });
+    setParsedData((previous) => previous ? {
+      ...previous,
+      tasks: previous.tasks.map((task, taskIndex) => taskIndex === index
+        ? { ...task, selected: !task.selected } : task),
+    } : previous);
   };
 
   const handleFinalSubmit = () => {

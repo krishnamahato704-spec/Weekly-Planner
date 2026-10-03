@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -15,11 +15,14 @@ import {
   Sparkles,
   Info
 } from 'lucide-react';
-import { Chart, registerables } from 'chart.js';
+import { Chart, BarController, LineController, BarElement, LineElement, PointElement,
+  CategoryScale, LinearScale, Tooltip, Filler } from 'chart.js';
 import { WeekPlan, Task } from '../types';
 import { formatWeekRange } from '../utils/dateUtils';
+import { summarizeWeeks } from '../utils/taskUtils';
 
-Chart.register(...registerables);
+Chart.register(BarController, LineController, BarElement, LineElement, PointElement,
+  CategoryScale, LinearScale, Tooltip, Filler);
 
 interface ProgressBoardProps {
   weeks: WeekPlan[];
@@ -45,16 +48,11 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
   const [inspectingWeek, setInspectingWeek] = useState<WeekPlan | null>(null);
 
-  // Chronologically sorted weeks for chart (oldest to newest)
-  const sortedWeeksAsc = [...weeks].sort((a, b) => a.sundayDate.localeCompare(b.sundayDate));
-  // Reverse sorted for grid display (newest first)
-  const sortedWeeksDesc = [...weeks].sort((a, b) => b.sundayDate.localeCompare(a.sundayDate));
-
-  // High-level aggregates
+  const stats = useMemo(() => summarizeWeeks(weeks), [weeks]);
+  const sortedSummariesDesc = useMemo(() => [...stats.summaries].reverse(), [stats]);
   const totalWeeks = weeks.length;
-  const allTasksAcrossWeeks = weeks.flatMap((w) => w.tasks);
-  const totalCompletedAllTime = allTasksAcrossWeeks.filter((t) => t.completed).length;
-  const totalTasksAllTime = allTasksAcrossWeeks.length;
+  const totalCompletedAllTime = stats.completed;
+  const totalTasksAllTime = stats.total;
   const averageCompletion = totalTasksAllTime === 0
     ? 0
     : Math.round((totalCompletedAllTime / totalTasksAllTime) * 100);
@@ -62,26 +60,28 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
   useEffect(() => {
     if (!chartRef.current) return;
 
-    if (chartInstanceRef.current) {
-      chartInstanceRef.current.destroy();
-    }
-
-    const labels = sortedWeeksAsc.map((w) => w.title.replace('Week of Sunday, ', ''));
-    const completionPercentages = sortedWeeksAsc.map((w) => {
-      const tot = w.tasks.length;
-      const comp = w.tasks.filter((t) => t.completed).length;
-      return tot === 0 ? 0 : Math.round((comp / tot) * 100);
+    const chart = new Chart(chartRef.current, {
+      type: chartType,
+      data: { labels: [], datasets: [] },
     });
+    chartInstanceRef.current = chart;
+    return () => {
+      chart.destroy();
+      chartInstanceRef.current = null;
+    };
+  }, [chartType]);
 
-    const completedCounts = sortedWeeksAsc.map((w) => w.tasks.filter((t) => t.completed).length);
-    const totalCounts = sortedWeeksAsc.map((w) => w.tasks.length);
+  useEffect(() => {
+    const chart = chartInstanceRef.current;
+    if (!chart) return;
+
+    const labels = stats.summaries.map(({ week }) => week.title.replace('Week of Sunday, ', ''));
+    const completionPercentages = stats.summaries.map((summary) => summary.percentage);
 
     const textColor = isDarkMode ? '#9ca3af' : '#52525b';
     const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)';
 
-    chartInstanceRef.current = new Chart(chartRef.current, {
-      type: chartType,
-      data: {
+    chart.data = {
         labels,
         datasets: [
           {
@@ -97,8 +97,8 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
             borderRadius: 6,
           },
         ],
-      },
-      options: {
+      };
+    chart.options = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -109,7 +109,8 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
             callbacks: {
               label: (context) => {
                 const idx = context.dataIndex;
-                return ` ${context.parsed.y}% (${completedCounts[idx]}/${totalCounts[idx]} tasks done)`;
+                const summary = stats.summaries[idx];
+                return ` ${context.parsed.y}% (${summary.completed}/${summary.total} tasks done)`;
               },
             },
           },
@@ -130,15 +131,9 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
             },
           },
         },
-      },
-    });
-
-    return () => {
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.destroy();
-      }
-    };
-  }, [sortedWeeksAsc, chartType, isDarkMode]);
+      };
+    chart.update();
+  }, [stats, chartType, isDarkMode]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -263,11 +258,7 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedWeeksDesc.map((week) => {
-            const tot = week.tasks.length;
-            const comp = week.tasks.filter((t) => t.completed).length;
-            const unfin = tot - comp;
-            const pct = tot === 0 ? 0 : Math.round((comp / tot) * 100);
+          {sortedSummariesDesc.map(({ week, total: tot, completed: comp, remaining: unfin, percentage: pct }) => {
 
             return (
               <div

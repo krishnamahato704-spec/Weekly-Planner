@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, Copy, Check, Download, FileCode } from 'lucide-react';
 import { generateStandaloneHtml } from '../utils/generateStandaloneHtml';
+import { useTimeout } from '../hooks/useTimeout';
 
 interface StandaloneExportModalProps {
   isOpen: boolean;
@@ -9,15 +10,19 @@ interface StandaloneExportModalProps {
 
 export const StandaloneExportModal: React.FC<StandaloneExportModalProps> = ({ isOpen, onClose }) => {
   const [copied, setCopied] = useState(false);
+  const { schedule } = useTimeout();
+  const htmlContent = useMemo(() => isOpen ? generateStandaloneHtml() : '', [isOpen]);
 
   if (!isOpen) return null;
 
-  const htmlContent = generateStandaloneHtml();
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(htmlContent);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(htmlContent);
+      setCopied(true);
+      schedule(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy standalone HTML:', error);
+    }
   };
 
   const handleDownload = () => {

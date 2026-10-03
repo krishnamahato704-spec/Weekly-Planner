@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Task, Priority } from '../types';
 import { formatFriendlyDate, getTodayDateString } from '../utils/studySessionUtils';
+import { indexTasksByDate } from '../utils/taskUtils';
 
 interface CalendarViewProps {
   allTasks: Task[];
@@ -56,6 +57,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const categories = useMemo(() => {
     return Array.from(new Set(allTasks.map((t) => t.category))).filter(Boolean);
   }, [allTasks]);
+  const taskCountsByDate = useMemo(() => indexTasksByDate(allTasks), [allTasks]);
 
   // Calculate Monday-to-Sunday dates for the active week block
   const getCurrentDateObj = () => {
@@ -148,6 +150,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     if (viewMode === 'weekly_block') {
       d.setDate(d.getDate() - 7);
     } else {
+      d.setDate(1);
       d.setMonth(d.getMonth() - 1);
     }
     const year = d.getFullYear();
@@ -161,6 +164,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     if (viewMode === 'weekly_block') {
       d.setDate(d.getDate() + 7);
     } else {
+      d.setDate(1);
       d.setMonth(d.getMonth() + 1);
     }
     const year = d.getFullYear();
@@ -628,11 +632,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
           <div className="space-y-3">
             {monthBlocks.weeksList.map((block) => {
-              const blockTasks = allTasks.filter((t) =>
-                t.scheduledDate ? block.dates.includes(t.scheduledDate) : false
-              );
-              const bCompleted = blockTasks.filter((t) => t.completed).length;
-              const bTotal = blockTasks.length;
+              let bCompleted = 0;
+              let bTotal = 0;
+              for (const date of block.dates) {
+                const counts = taskCountsByDate.get(date);
+                bCompleted += counts?.completed ?? 0;
+                bTotal += counts?.total ?? 0;
+              }
               const bPercent = bTotal > 0 ? Math.round((bCompleted / bTotal) * 100) : 0;
               const isCurrentSelected = block.startDate === weekStartStr;
 

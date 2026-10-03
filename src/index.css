@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* The exported page supplies its own Tailwind CDN stylesheet. */
+@source not "./utils/generateStandaloneHtml.ts";
 
 @custom-variant dark (&:where(.dark, .dark *));
 

@@ -20,6 +20,7 @@ import {
 import { Task, WeekPlan, TaskFilter, Priority } from '../types';
 import { CompletionGauge } from './CompletionGauge';
 import { formatWeekRange } from '../utils/dateUtils';
+import { selectTasks, summarizeTasks } from '../utils/taskUtils';
 
 interface CurrentWeekViewProps {
   week: WeekPlan;
@@ -58,15 +59,16 @@ export const CurrentWeekView: React.FC<CurrentWeekViewProps> = ({
   const [quickCategory, setQuickCategory] = useState('Study');
   const [quickPriority, setQuickPriority] = useState<Priority>('Medium');
 
-  const totalTasks = week.tasks.length;
-  const completedTasks = week.tasks.filter((t) => t.completed).length;
-  const remainingTasks = totalTasks - completedTasks;
-  const completionPercentage = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
-
-  const highPriorityCount = week.tasks.filter((t) => t.priority === 'High' && !t.completed).length;
-  const medPriorityCount = week.tasks.filter((t) => t.priority === 'Medium' && !t.completed).length;
-  const lowPriorityCount = week.tasks.filter((t) => t.priority === 'Low' && !t.completed).length;
-  const carriedOverTasksCount = week.tasks.filter((t) => !!t.carriedOverFrom).length;
+  const stats = useMemo(() => summarizeTasks(week.tasks), [week.tasks]);
+  const { total: totalTasks, completed: completedTasks, remaining: remainingTasks,
+    percentage: completionPercentage, carriedOver: carriedOverTasksCount } = stats;
+  const { High: highPriorityCount, Medium: medPriorityCount, Low: lowPriorityCount } = stats.pendingByPriority;
+  const weekOptions = useMemo(() => allWeeks.map((plan) => ({
+    id: plan.id,
+    title: plan.title,
+    total: plan.tasks.length,
+    completed: plan.tasks.reduce((count, task) => count + Number(!!task.completed), 0),
+  })), [allWeeks]);
 
   const handleQuickAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,40 +77,10 @@ export const CurrentWeekView: React.FC<CurrentWeekViewProps> = ({
     setQuickTitle('');
   };
 
-  const filteredTasks = week.tasks.filter((task) => {
-    if (filter === 'completed' && !task.completed) return false;
-    if (filter === 'remaining' && task.completed) return false;
-    if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchTitle = task.title.toLowerCase().includes(q);
-      const matchCategory = task.category.toLowerCase().includes(q);
-      const matchNotes = task.notes ? task.notes.toLowerCase().includes(q) : false;
-      return matchTitle || matchCategory || matchNotes;
-    }
-    return true;
-  });
-
-  const sortedTasks = useMemo(() => {
-    return [...filteredTasks].sort((a, b) => {
-      if (sortBy === 'priority') {
-        const pOrder: Record<Priority, number> = { High: 0, Medium: 1, Low: 2 };
-        if (pOrder[a.priority] !== pOrder[b.priority]) {
-          return pOrder[a.priority] - pOrder[b.priority];
-        }
-      }
-      if (sortBy === 'incomplete_first') {
-        if (a.completed !== b.completed) {
-          return a.completed ? 1 : -1;
-        }
-      }
-      if (sortBy === 'title') {
-        return a.title.localeCompare(b.title);
-      }
-      return 0;
-    });
-  }, [filteredTasks, sortBy]);
+  const sortedTasks = useMemo(
+    () => selectTasks(week.tasks, filter, priorityFilter, searchQuery, sortBy),
+    [week.tasks, filter, priorityFilter, searchQuery, sortBy],
+  );
 
   const handleCyclePriority = (e: React.MouseEvent, task: Task) => {
     e.stopPropagation();
@@ -195,9 +167,9 @@ export const CurrentWeekView: React.FC<CurrentWeekViewProps> = ({
               onChange={(e) => onSelectWeekId(e.target.value)}
               className="text-xs sm:text-sm pl-3 pr-8 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F1420] text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs appearance-none cursor-pointer"
             >
-              {allWeeks.map((w) => (
+              {weekOptions.map((w) => (
                 <option key={w.id} value={w.id}>
-                  {w.title} ({w.tasks.filter((t) => t.completed).length}/{w.tasks.length})
+                  {w.title} ({w.completed}/{w.total})
                 </option>
               ))}
             </select>
@@ -499,7 +471,7 @@ export const CurrentWeekView: React.FC<CurrentWeekViewProps> = ({
             </p>
           </div>
         ) : (
-          filteredTasks.map((task) => (
+          sortedTasks.map((task) => (
             <div
               key={task.id}
               className={`group flex items-start justify-between gap-3.5 p-4 rounded-2xl border transition-all duration-200 ${

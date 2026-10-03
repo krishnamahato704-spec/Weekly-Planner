@@ -873,24 +873,7 @@ export function isBookComplete(book: NcertBook, store: NcertProgressStore): bool
 }
 
 export function getAllFlatChapters(): NcertFlatChapter[] {
-  const list: NcertFlatChapter[] = [];
-  for (const classInfo of NCERT_CLASSES_DATA) {
-    for (const book of classInfo.books) {
-      for (const chapter of book.chapters) {
-        list.push({
-          id: chapter.id,
-          chapterNumber: chapter.chapterNumber,
-          title: chapter.title,
-          theme: chapter.theme,
-          classNum: classInfo.classNum,
-          className: classInfo.className,
-          bookId: book.id,
-          bookTitle: book.title,
-          subject: book.subject,
-        });
-      }
-    }
-  }
-  return list;
+  // Chapter metadata is static. Give callers their own array without rebuilding every chapter.
+  return ALL_NCERT_CHAPTERS.slice();
 }
 

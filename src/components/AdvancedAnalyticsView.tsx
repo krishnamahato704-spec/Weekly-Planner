@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   BarChart3,
   CheckCircle2,
@@ -13,10 +13,11 @@ import {
   CheckCheck,
   GraduationCap,
 } from 'lucide-react';
-import { Task, WeekPlan } from '../types';
+import { WeekPlan } from '../types';
+import { summarizeWeeks } from '../utils/taskUtils';
 import {
   NcertProgressStore,
-  getAllFlatChapters,
+  ALL_NCERT_CHAPTERS,
   isChapterComplete,
 } from '../utils/ncertData';
 
@@ -29,66 +30,36 @@ export const AdvancedAnalyticsView: React.FC<AdvancedAnalyticsViewProps> = ({
   weeks,
   ncertProgress,
 }) => {
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
-
-  // Flatten all tasks from all weeks
-  const allWeeklyTasks: Task[] = weeks.flatMap((w) => w.tasks);
-  const totalTasksCount = allWeeklyTasks.length;
-  const completedTasksCount = allWeeklyTasks.filter((t) => t.completed).length;
+  const stats = useMemo(() => summarizeWeeks(weeks), [weeks]);
+  const { total: totalTasksCount, completed: completedTasksCount,
+    highPriorityTotal, highPriorityCompleted } = stats;
   const overallCompletionRate =
     totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
 
   // High priority stats
-  const highPriorityTasks = allWeeklyTasks.filter((t) => t.priority === 'High');
-  const highPriorityCompleted = highPriorityTasks.filter((t) => t.completed).length;
   const highPriorityRate =
-    highPriorityTasks.length > 0
-      ? Math.round((highPriorityCompleted / highPriorityTasks.length) * 100)
+    highPriorityTotal > 0
+      ? Math.round((highPriorityCompleted / highPriorityTotal) * 100)
       : 0;
 
   // NCERT Progress stats
-  const allNcertChapters = getAllFlatChapters();
-  const completedNcertCount = allNcertChapters.filter((ch) =>
-    isChapterComplete(ncertProgress[ch.id])
-  ).length;
+  const allNcertChapters = ALL_NCERT_CHAPTERS;
+  const completedNcertCount = useMemo(() => allNcertChapters.reduce((count, chapter) =>
+    count + Number(isChapterComplete(ncertProgress[chapter.id])), 0), [ncertProgress]);
   const ncertRate =
     allNcertChapters.length > 0
       ? Math.round((completedNcertCount / allNcertChapters.length) * 100)
       : 0;
 
   // Categories breakdown
-  const categoryCounts: Record<string, { total: number; completed: number }> = {};
-  allWeeklyTasks.forEach((t) => {
-    const cat = t.category || 'General';
-    if (!categoryCounts[cat]) {
-      categoryCounts[cat] = { total: 0, completed: 0 };
-    }
-    categoryCounts[cat].total += 1;
-    if (t.completed) {
-      categoryCounts[cat].completed += 1;
-    }
-  });
-
-  const categoryEntries = Object.entries(categoryCounts).sort(
+  const categoryEntries = useMemo(() => [...stats.categories].sort(
     (a, b) => b[1].total - a[1].total
-  );
+  ), [stats]);
 
   // Week-by-week trends
-  const weekTrends = [...weeks]
-    .sort((a, b) => a.sundayDate.localeCompare(b.sundayDate))
-    .map((w) => {
-      const tot = w.tasks.length;
-      const comp = w.tasks.filter((t) => t.completed).length;
-      const pct = tot > 0 ? Math.round((comp / tot) * 100) : 0;
-      return {
-        id: w.id,
-        title: w.title,
-        sundayDate: w.sundayDate,
-        total: tot,
-        completed: comp,
-        percentage: pct,
-      };
-    });
+  const weekTrends = useMemo(() => stats.summaries.map(({ week, total, completed, percentage }) => ({
+    id: week.id, title: week.title, total, completed, percentage,
+  })), [stats]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -148,7 +119,7 @@ export const AdvancedAnalyticsView: React.FC<AdvancedAnalyticsViewProps> = ({
             {highPriorityRate}%
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            {highPriorityCompleted} of {highPriorityTasks.length} high priority cleared
+            {highPriorityCompleted} of {highPriorityTotal} high priority cleared
           </p>
         </div>
 
