@@ -13,7 +13,7 @@ export function createNetlifyApiHandler() {
 
   return async (request: Request, env: Environment, clientIp: string): Promise<Response> => {
     const url = new URL(request.url);
-    const headers = new Headers({ ...securityHeaders(url.protocol === 'https:'), 'Cache-Control': 'no-store' });
+    const headers = new Headers({ ...securityHeaders(url.protocol === 'https:'), 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' });
     const json = (body: unknown, status = 200) => {
       headers.set('Content-Type', 'application/json; charset=utf-8');
       return new Response(request.method === 'HEAD' ? null : JSON.stringify(body), { status, headers });
