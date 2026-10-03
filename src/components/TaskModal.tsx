@@ -3,6 +3,7 @@ import { X, Check, RotateCcw, Sparkles } from 'lucide-react';
 import { Priority, Task } from '../types';
 import { Dialog } from './ui/Dialog';
 import { SegmentedControl } from './ui/Primitives';
+import { validateTask } from '../utils/dataValidation';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function TaskModal({ isOpen, onClose, onSave, initialTask, existingCatego
   const [notes, setNotes] = useState('');
   const [scheduledDate, setScheduledDate] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const categories = useMemo(() => Array.from(new Set([...defaultCategories, ...existingCategories])), [existingCategories]);
   useEffect(() => {
     setTitle(initialTask?.title || '');
@@ -35,6 +37,7 @@ export function TaskModal({ isOpen, onClose, onSave, initialTask, existingCatego
     setNotes(initialTask?.notes || '');
     setScheduledDate(initialTask?.scheduledDate || '');
     setIsRecurring(!!initialTask?.isRecurring);
+    setErrorMessage(null);
   }, [initialTask, isOpen]);
 
   return <Dialog isOpen={isOpen} onClose={onClose} labelledBy={`${id}-heading`} className="w-full max-w-lg">
@@ -45,13 +48,18 @@ export function TaskModal({ isOpen, onClose, onSave, initialTask, existingCatego
   <form className="dialog-form" onSubmit={event => {
     event.preventDefault();
     if (!title.trim()) return;
-    onSave({ title: title.trim(), category: category === 'Other' ? customCategory.trim() || 'General' : category,
-      priority, notes: notes.trim() || undefined, scheduledDate: scheduledDate || undefined, isRecurring });
-    onClose();
+    try {
+      const validated = validateTask({ id: 'form-task', title: title.trim(), category: category === 'Other' ? customCategory.trim() || 'General' : category,
+        priority, notes: notes.trim() || undefined, scheduledDate: scheduledDate || undefined, isRecurring });
+      onSave({ title: validated.title, category: validated.category, priority: validated.priority,
+        notes: validated.notes, scheduledDate: validated.scheduledDate, isRecurring: validated.isRecurring });
+      onClose();
+    } catch (error) { setErrorMessage(error instanceof Error ? error.message : 'The task could not be saved.'); }
   }}>
+    {errorMessage && <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">{errorMessage}</p>}
     <div>
       <label className="field-label" htmlFor={`${id}-title`}>Task title <span className="text-muted font-normal">(required)</span></label>
-      <input id={`${id}-title`} data-initial-focus required className="field" value={title} onChange={event => setTitle(event.target.value)} placeholder="What would you like to accomplish?" />
+      <input id={`${id}-title`} data-initial-focus required className="field" value={title} onChange={event => setTitle(event.target.value)} placeholder="What would you like to accomplish?" maxLength={500}/>
     </div>
     {!initialTask && <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3.5">
       <p className="text-xs text-muted flex items-center gap-1.5"><Sparkles aria-hidden="true" size={13} />Start with a recurring routine</p>
@@ -64,7 +72,7 @@ export function TaskModal({ isOpen, onClose, onSave, initialTask, existingCatego
         <select id={`${id}-category`} className="field" value={category} onChange={event => setCategory(event.target.value)}>
           {categories.map(item => <option key={item}>{item}</option>)}<option value="Other">Custom category</option>
         </select>
-        {category === 'Other' && <><label className="sr-only" htmlFor={`${id}-custom`}>Custom category name</label><input id={`${id}-custom`} className="field mt-2" value={customCategory} onChange={event => setCustomCategory(event.target.value)} placeholder="Category name" /></>}
+        {category === 'Other' && <><label className="sr-only" htmlFor={`${id}-custom`}>Custom category name</label><input id={`${id}-custom`} className="field mt-2" value={customCategory} onChange={event => setCustomCategory(event.target.value)} placeholder="Category name" maxLength={100}/></>}
       </div>
       <div><span className="field-label">Priority</span><SegmentedControl label="Task priority" value={priority} onChange={setPriority} options={(['Low', 'Medium', 'High'] as Priority[]).map(value => ({ value, label: value }))} /></div>
     </div>
@@ -73,7 +81,7 @@ export function TaskModal({ isOpen, onClose, onSave, initialTask, existingCatego
       <input type="checkbox" className="size-4 shrink-0" checked={isRecurring} onChange={event => setIsRecurring(event.target.checked)} />
     </label>
     <div><label className="field-label" htmlFor={`${id}-date`}>Scheduled date <span className="text-muted font-normal">(optional)</span></label><input id={`${id}-date`} type="date" className="field" value={scheduledDate} onChange={event => setScheduledDate(event.target.value)} /></div>
-    <div><label className="field-label" htmlFor={`${id}-notes`}>Notes <span className="text-muted font-normal">(optional)</span></label><textarea id={`${id}-notes`} rows={3} className="field resize-y" value={notes} onChange={event => setNotes(event.target.value)} placeholder="A few details to help you get started..." /></div>
+    <div><label className="field-label" htmlFor={`${id}-notes`}>Notes <span className="text-muted font-normal">(optional)</span></label><textarea id={`${id}-notes`} rows={3} className="field resize-y" value={notes} onChange={event => setNotes(event.target.value)} placeholder="A few details to help you get started..." maxLength={20000}/></div>
     <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
       <button type="button" className="button button-secondary" onClick={onClose}>Cancel</button>
       <button type="submit" className="button button-primary" disabled={!title.trim()}><Check aria-hidden="true" size={16} />{initialTask ? 'Save Changes' : 'Add Task'}</button>

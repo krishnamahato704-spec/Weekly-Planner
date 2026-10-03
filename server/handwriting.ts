@@ -1,28 +1,15 @@
 import type { GoogleGenAI, Part } from '@google/genai';
+import { DataValidationError, parseBoundedJson } from '../src/utils/dataValidation';
+import { validateTranscriptionInput, validateTranscription } from '../src/utils/transcription';
+import { HandwritingError } from './security';
+export { HandwritingError } from './security';
 
-export class HandwritingError extends Error {
-  constructor(public status: number, message: string) { super(message); }
-}
+type Input = ReturnType<typeof validateTranscriptionInput>;
+interface ParserOptions { timeoutMs?: number; generateContent?: (input: Input, signal: AbortSignal) => Promise<string> }
 
-export function createHandwritingParser(apiKey?: string) {
+export function createHandwritingParser(apiKey?: string, { timeoutMs = 60_000, generateContent }: ParserOptions = {}) {
   let ai: GoogleGenAI | undefined;
-  return async (payload: Record<string, unknown>, signal: AbortSignal) => {
-    const { imageBase64, mimeType, additionalNotes } = payload ?? {};
-
-    if ((imageBase64 != null && typeof imageBase64 !== 'string') ||
-        (mimeType != null && typeof mimeType !== 'string') ||
-        (additionalNotes != null && typeof additionalNotes !== 'string')) {
-      throw new HandwritingError(400, 'Image, MIME type, and notes must be strings.');
-    }
-
-    if (!imageBase64 && !additionalNotes) {
-      throw new HandwritingError(400, 'Please provide an image of your handwritten notes or text prompt.');
-    }
-
-    if (!apiKey) {
-      throw new HandwritingError(500, 'GEMINI_API_KEY is not configured on the server.');
-    }
-
+  const generate = generateContent ?? (async ({ imageBase64, mimeType, additionalNotes }: Input, signal: AbortSignal) => {
     // Load the SDK on the first AI request and reuse its client thereafter.
     const { GoogleGenAI, Type } = await import('@google/genai');
     ai ??= new GoogleGenAI({
@@ -32,11 +19,10 @@ export function createHandwritingParser(apiKey?: string) {
     const parts: Part[] = [];
 
     if (imageBase64) {
-      const cleanBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
       parts.push({
         inlineData: {
           mimeType: mimeType || 'image/jpeg',
-          data: cleanBase64,
+          data: imageBase64,
         },
       });
     }
@@ -89,10 +75,35 @@ export function createHandwritingParser(apiKey?: string) {
       },
     });
 
-    const parsed = JSON.parse(response.text || '{}');
-    return {
-      success: true,
-      data: parsed,
-    };
+    return response.text || '{}';
+  });
+  return async (payload: unknown, signal: AbortSignal) => {
+    let input: Input;
+    try { input = validateTranscriptionInput(payload); }
+    catch (error) { throw new HandwritingError(400, error instanceof DataValidationError ? error.message : 'Invalid planner input.'); }
+    if (!apiKey) throw new HandwritingError(503, 'Image transcription is currently unavailable. Add tasks manually or try again later.');
+    if (signal.aborted) throw new HandwritingError(499, 'The transcription request was cancelled.');
+    const controller = new AbortController();
+    let timedOut = false;
+    let timer: ReturnType<typeof setTimeout>;
+    let abortListener: () => void = () => {};
+    const interrupted = new Promise<never>((_, reject) => {
+      abortListener = () => { controller.abort(); reject(new HandwritingError(499, 'The transcription request was cancelled.')); };
+      if (signal.aborted) abortListener(); else signal.addEventListener('abort', abortListener, { once: true });
+      timer = setTimeout(() => { timedOut = true; controller.abort(); reject(new HandwritingError(504, 'Transcription took too long. Try again or add tasks manually.')); }, timeoutMs);
+    });
+    try {
+      const output = await Promise.race([generate(input, controller.signal), interrupted]);
+      try { return { success: true, data: validateTranscription(parseBoundedJson(output, 1024 * 1024)) }; }
+      catch { throw new HandwritingError(502, 'The transcription service returned an invalid planner. Try again or add tasks manually.'); }
+    } catch (error) {
+      if (timedOut) throw new HandwritingError(504, 'Transcription took too long. Try again or add tasks manually.');
+      if (signal.aborted) throw new HandwritingError(499, 'The transcription request was cancelled.');
+      if (error instanceof HandwritingError) throw error;
+      throw new HandwritingError(502, 'The transcription service could not analyze this planner. Try again or add tasks manually.');
+    } finally {
+      clearTimeout(timer!);
+      signal.removeEventListener('abort', abortListener);
+    }
   };
 }

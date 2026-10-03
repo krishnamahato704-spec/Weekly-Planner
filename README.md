@@ -11,7 +11,7 @@ bun install --frozen-lockfile
 bun run dev
 ```
 
-The server uses port 3000 by default. Set `PORT` to choose another port. Add `GEMINI_API_KEY` to your environment or a local `.env` file to use transcription. The planner and health endpoint work without this key.
+The server uses port 3000 by default. Set `PORT` to choose another port. Optional transcription requires both `GEMINI_API_KEY` and a separate random `TRANSCRIPTION_ACCESS_TOKEN` of 32–256 characters in the server environment or a local `.env` file. Authorized users enter the access code when prompted. The planner and health endpoint work without these secrets. Keep them out of client build variables and source control.
 
 ## Check changes
 
@@ -32,6 +32,8 @@ See [the design system](docs/DESIGN_SYSTEM.md) for layout rules, shared CSS clas
 See [the responsive review](docs/RESPONSIVE_REVIEW.md) for mobile, tablet, desktop, and landscape layout changes and validation.
 
 See [the accessibility and SEO review](docs/ACCESSIBILITY_REVIEW.md) for keyboard behavior, labels, contrast, page metadata, and validation limits.
+
+See [the security and reliability review](docs/SECURITY_REVIEW.md) for input validation, API protections, data recovery, verified failure cases, and deployment limits.
 
 ## Public deployment build
 

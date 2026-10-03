@@ -819,13 +819,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
           {/* Search bar */}
           <div className="relative flex-1 max-w-md">
             <Search aria-hidden="true" className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <><label className="sr-only" htmlFor={`${fieldId}-field-1`}>Search chapters, books, subjects, or classes</label><input id={`${fieldId}-field-1`}
-              type="text"
-              placeholder="Search chapters, books, subjects, or classes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-            /></>
+            <><label className="sr-only" htmlFor={`${fieldId}-field-1`}>Search chapters, books, subjects, or classes</label><input id={`${fieldId}-field-1`} type="text" placeholder="Search chapters, books, subjects, or classes..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" maxLength={500}/></>
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}

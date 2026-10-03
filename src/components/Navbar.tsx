@@ -1,4 +1,5 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useSyncExternalStore } from 'react';
+import { subscribeStorage, getStorageIssues } from '../utils/storage';
 import { Menu, Plus, Moon, Sun, RotateCcw, Download, ChevronRight } from 'lucide-react';
 import { Brand, MobileNavDrawer, NavigationContent } from './MobileNavDrawer';
 import { destinations, isDestinationActive, NavDestination } from './navigation';
@@ -21,6 +22,7 @@ interface NavbarProps {
 export function Navbar({ currentSection, onSelectDestination, pendingTasksCount = 0, dueRevisionsCount = 0,
   ncertPercent = 0, onOpenAddTask, onOpenNotebookModal, onOpenUploadScanModal, onOpenExportModal = () => {},
   onOpenBackupModal, onOpenRemindersCenter, isDarkMode, onToggleDarkMode }: NavbarProps) {
+  const storageIssues = useSyncExternalStore(subscribeStorage, getStorageIssues);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const section = destinations.find(destination => isDestinationActive(destination.id, currentSection));
@@ -36,7 +38,7 @@ export function Navbar({ currentSection, onSelectDestination, pendingTasksCount 
         <p className="mt-1 text-xs leading-relaxed text-muted">Start with one task. Your weekly plan grows with you.</p>
         <button type="button" className="button button-secondary mt-4 w-full" onClick={onOpenAddTask}>Add a task <ChevronRight aria-hidden="true" size={15} /></button>
       </div>
-      <div className="sidebar-footer"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Saved on this device</div>
+      <div className="sidebar-footer" aria-live="polite"><span className={`h-1.5 w-1.5 rounded-full ${storageIssues.length ? 'bg-amber-600' : 'bg-emerald-500'}`} /> {storageIssues.length ? 'Saving needs attention' : 'Saved on this device'}</div>
     </aside>
     <header className="app-topbar">
       <div className="flex min-w-0 items-center gap-3">

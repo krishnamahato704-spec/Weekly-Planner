@@ -21,18 +21,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>
-      (function() {
-        try {
-          var saved = localStorage.getItem('sunday_plan_theme_v1');
-          if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.classList.remove('dark');
-          }
-        } catch (e) {}
-      })();
-    </script>
+    <script src="/theme.js"></script>
   </head>
   <body>
     <noscript><main><h1>WeeklyPlan</h1><p>Plan weekly tasks, track study chapters and revisions, and review your progress.</p><p>Enable JavaScript to use the planner. Your planner data is saved in this browser.</p></main></noscript>

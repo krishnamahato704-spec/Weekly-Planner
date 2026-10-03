@@ -266,13 +266,7 @@ export const RevisionReminderCenterModal: React.FC<RevisionReminderCenterModalPr
               <p className="text-slate-500 dark:text-slate-400 text-[11px]">
                 Configure days between successive revision cycles. Default: 1, 3, 7, 14, 30 days.
               </p>
-              <><label className="sr-only" htmlFor={`${fieldId}-field-1`}>1, 3, 7, 14, 30</label><input id={`${fieldId}-field-1`}
-                type="text"
-                value={localIntervals}
-                onChange={(e) => setLocalIntervals(e.target.value)}
-                placeholder="1, 3, 7, 14, 30"
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              /></>
+              <><label className="sr-only" htmlFor={`${fieldId}-field-1`}>1, 3, 7, 14, 30</label><input id={`${fieldId}-field-1`} type="text" value={localIntervals} onChange={(e) => setLocalIntervals(e.target.value)} placeholder="1, 3, 7, 14, 30" className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={500}/></>
               <button
                 type="button"
                 onClick={handleSaveSchedule}

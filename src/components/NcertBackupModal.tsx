@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { X, Download, Upload, RefreshCw, Check, AlertCircle } from 'lucide-react';
 import { NcertProgressStore } from '../utils/ncertData';
 import { useTimeout } from '../hooks/useTimeout';
+import { MAX_BACKUP_BYTES, parseBoundedJson, validateNcertProgress } from '../utils/dataValidation';
+import { useRef } from 'react';
 
 interface NcertBackupModalProps {
   isOpen: boolean;
@@ -24,6 +26,8 @@ export const NcertBackupModal: React.FC<NcertBackupModalProps> = ({
   const [importText, setImportText] = useState('');
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const { schedule, cancel } = useTimeout();
+  const readerRef = useRef<FileReader | null>(null);
+  useEffect(() => () => readerRef.current?.abort(), []);
   useEffect(() => {
     if (!isOpen) cancel();
   }, [isOpen, cancel]);
@@ -55,11 +59,8 @@ export const NcertBackupModal: React.FC<NcertBackupModalProps> = ({
         setImportStatus({ type: 'error', message: 'Please paste JSON data or choose a file.' });
         return;
       }
-      const parsed = JSON.parse(importText);
-      const storeToImport: NcertProgressStore = parsed.progress || parsed;
-      if (typeof storeToImport !== 'object' || storeToImport === null) {
-        throw new Error('Invalid format');
-      }
+      const parsed = parseBoundedJson(importText) as { progress?: unknown } | null;
+      const storeToImport = validateNcertProgress(parsed?.progress ?? parsed);
       onImportProgress(storeToImport);
       setImportStatus({ type: 'success', message: 'Progress imported successfully!' });
       schedule(() => {
@@ -78,11 +79,15 @@ export const NcertBackupModal: React.FC<NcertBackupModalProps> = ({
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    readerRef.current?.abort();
+    if (file.size > MAX_BACKUP_BYTES) { setImportStatus({ type: 'error', message: 'Choose a JSON backup smaller than 10 MiB.' }); return; }
     const reader = new FileReader();
+    readerRef.current = reader;
     reader.onload = (event) => {
       const content = event.target?.result as string;
       setImportText(content);
     };
+    reader.onerror = () => setImportStatus({ type: 'error', message: 'The backup could not be read. Choose the file again.' });
     reader.readAsText(file);
   };
 
@@ -149,13 +154,7 @@ export const NcertBackupModal: React.FC<NcertBackupModalProps> = ({
               />
             </label>
           </div>
-          <><label className="sr-only" htmlFor={`${fieldId}-field-1`}>Or paste JSON backup string here</label><textarea id={`${fieldId}-field-1`}
-            rows={3}
-            placeholder="Or paste JSON backup string here..."
-            value={importText}
-            onChange={(e) => setImportText(e.target.value)}
-            className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-          /></>
+          <><label className="sr-only" htmlFor={`${fieldId}-field-1`}>Or paste JSON backup string here</label><textarea id={`${fieldId}-field-1`} rows={3} placeholder="Or paste JSON backup string here..." value={importText} onChange={(e) => setImportText(e.target.value)} className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" maxLength={10485760}/></>
           {importStatus && (
             <div
               className={`p-2.5 rounded-lg text-xs flex items-center gap-2 ${

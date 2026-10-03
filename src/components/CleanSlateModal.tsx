@@ -29,7 +29,7 @@ export const CleanSlateModal: React.FC<CleanSlateModalProps> = ({
               Clean Slate: Delete All Progress
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Start fresh with zero progress, keeping only this week's plan
+              Restore the starter plan and clear your saved progress
             </p>
           </div>
         </div>
@@ -48,7 +48,7 @@ export const CleanSlateModal: React.FC<CleanSlateModalProps> = ({
         <div className="text-xs text-amber-900 dark:text-amber-200/90 leading-relaxed">
           <p className="font-semibold mb-1">Clean Slate Policy</p>
           <p>
-            This will remove any completed checkboxes, task history, and study progress across the entire workspace.
+            This replaces your weeks and academic tracks with the starter plan and clears notes, history, and study progress. Recovery data downloads before the reset.
           </p>
         </div>
       </div>
@@ -58,14 +58,14 @@ export const CleanSlateModal: React.FC<CleanSlateModalProps> = ({
         <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800/60 space-y-2">
           <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
             <Calendar aria-hidden="true" className="w-3.5 h-3.5 text-indigo-500" />
-            <span>What Remains (Preserved)</span>
+            <span>Starter Plan Restored</span>
           </div>
           <ul className="space-y-1.5 text-slate-600 dark:text-slate-400 list-disc list-inside">
             <li>
-              <strong className="text-slate-800 dark:text-slate-200">This Week's Plan</strong> (Week of Sunday, Sep 27) with your 9 handwritten notebook tasks.
+              <strong className="text-slate-800 dark:text-slate-200">Week of Sunday, Sep 27</strong> with the 9 starter notebook tasks.
             </li>
             <li>
-              All syllabus curriculums (B.Ed, MA History, CTET, UGC NET, Canva & NCERT Classes 6–12).
+              Default syllabus tracks (B.Ed, MA History, CTET, UGC NET, Canva & NCERT Classes 6–12). Custom tracks are removed.
             </li>
           </ul>
         </div>
@@ -80,6 +80,7 @@ export const CleanSlateModal: React.FC<CleanSlateModalProps> = ({
             <li>All previous demo weeks deleted.</li>
             <li>All <strong>NCERT Social Science</strong> reading, notes, and revision progress reset to 0/636 (0%).</li>
             <li>All <strong>Academic Track</strong> chapters, modules, and School Internship counts reset to 0.</li>
+            <li>NCERT notes, revision history, and study sessions are cleared. Study goals, capacity, and reminder settings return to their defaults.</li>
           </ul>
         </div>
       </div>

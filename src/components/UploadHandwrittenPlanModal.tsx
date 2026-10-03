@@ -14,6 +14,8 @@ import {
   FileText
 } from 'lucide-react';
 import { Priority, Task } from '../types';
+import { IMAGE_MIME_TYPES, validateTranscriptionInput, validateTranscription } from '../utils/transcription';
+import { parseBoundedJson } from '../utils/dataValidation';
 
 interface ParsedTask {
   title: string;
@@ -48,6 +50,8 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [requiresAccessCode, setRequiresAccessCode] = useState(false);
+  const [accessCode, setAccessCode] = useState('');
   const [parsedData, setParsedData] = useState<{
     weekTitle?: string;
     focusGoal?: string;
@@ -64,11 +68,15 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
   useEffect(() => {
     if (!isOpen) {
       setIsScanning(false);
+      setAccessCode('');
+      setRequiresAccessCode(false);
       return;
     }
     return () => {
       readerRef.current?.abort();
       requestRef.current?.abort();
+      readerRef.current = null;
+      requestRef.current = null;
     };
   }, [isOpen]);
 
@@ -78,7 +86,7 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
+    if (!IMAGE_MIME_TYPES.includes(file.type as typeof IMAGE_MIME_TYPES[number])) {
       setErrorMessage('Please upload a valid image file (JPG, PNG, WEBP).');
       return;
     }
@@ -100,7 +108,13 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
     const reader = new FileReader();
     readerRef.current = reader;
     reader.onload = () => {
-      setImagePreview(reader.result as string);
+      try {
+        validateTranscriptionInput({ imageBase64: reader.result, mimeType: file.type });
+        setImagePreview(reader.result as string);
+      } catch {
+        setImageFile(null);
+        setErrorMessage('The image contents do not match a supported JPEG, PNG, or WebP file.');
+      }
     };
     reader.onerror = () => setErrorMessage('The image could not be read. Please choose it again.');
     reader.readAsDataURL(file);
@@ -111,6 +125,8 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
+    let timedOut = false;
+    const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, 65_000);
 
     setIsScanning(true);
     setErrorMessage(null);
@@ -119,7 +135,7 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
       const res = await fetch('/api/ai/parse-handwritten-plan', {
         method: 'POST',
         signal: controller.signal,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(accessCode ? { Authorization: `Bearer ${accessCode}` } : {}) },
         body: JSON.stringify({
           imageBase64: imagePreview,
           mimeType: imageFile?.type || 'image/jpeg',
@@ -127,34 +143,38 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
         }),
       });
 
-      const data = await res.json();
+      if (!res.headers.get('content-type')?.includes('application/json')) throw new Error('Image transcription is unavailable. Add tasks manually or try again later.');
+      const data = parseBoundedJson(await res.text(), 1024 * 1024) as { error?: unknown; data?: unknown };
+      if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('The transcription service returned an invalid response. Try again or add tasks manually.');
       if (controller.signal.aborted) return;
 
       if (!res.ok || data.error) {
-        throw new Error(data.error || 'Failed to scan handwritten plan');
+        if (res.status === 401) setRequiresAccessCode(true);
+        throw new Error(typeof data.error === 'string' && data.error.length <= 500 ? data.error : 'Failed to scan handwritten plan');
       }
 
-      if (data.data?.tasks) {
+      const transcription = validateTranscription(data.data);
+      if (transcription.tasks.length) {
         setParsedData({
-          weekTitle: data.data.weekTitle || 'Week of Sunday, Oct 4',
-          focusGoal: data.data.focusGoal || '',
-          tasks: data.data.tasks.map((t: any) => ({
+          weekTitle: transcription.weekTitle || 'Scanned weekly plan',
+          focusGoal: transcription.focusGoal || '',
+          tasks: transcription.tasks.map((t) => ({
             ...t,
             selected: true,
           })),
         });
-        if (data.data.focusGoal) {
-          setCustomGoal(data.data.focusGoal);
+        if (transcription.focusGoal) {
+          setCustomGoal(transcription.focusGoal);
         }
       } else {
         throw new Error('No tasks could be recognized in this image. Please ensure the handwriting is legible.');
       }
-    } catch (err: any) {
-      if (controller.signal.aborted) return;
-      console.error(err);
-      setErrorMessage(err.message || 'Error communicating with AI transcription server.');
+    } catch (err: unknown) {
+      if (controller.signal.aborted && !timedOut) return;
+      setErrorMessage(timedOut ? 'Transcription took too long. Try again or add tasks manually.' : err instanceof Error ? err.message : 'Error communicating with AI transcription server.');
     } finally {
-      if (requestRef.current === controller && !controller.signal.aborted) {
+      clearTimeout(timeout);
+      if (requestRef.current === controller) {
         requestRef.current = null;
         setIsScanning(false);
       }
@@ -229,6 +249,12 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
 
       {/* Content Body */}
       <div className="p-6 overflow-y-auto space-y-5">
+        <p className="text-xs text-slate-600 dark:text-slate-300">Scanning sends the selected image to Gemini for transcription. You can enter tasks manually instead.</p>
+        {requiresAccessCode && <div className="space-y-1">
+          <label htmlFor={`${fieldId}-access-code`} className="block text-sm font-semibold">Transcription access code</label>
+          <input id={`${fieldId}-access-code`} type="password" autoComplete="off" maxLength={256} value={accessCode} onChange={event => setAccessCode(event.target.value)} className="w-full rounded-lg border border-slate-400 bg-white p-3 text-sm dark:bg-slate-950" />
+          <p className="text-xs text-slate-600 dark:text-slate-300">Use the code supplied by the planner owner. It is kept only while this dialog is open.</p>
+        </div>}
         {errorMessage && (
           <div role="alert" className="p-3.5 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 text-xs text-rose-700 dark:text-rose-400 flex items-center gap-2">
             <AlertCircle aria-hidden="true" className="w-4 h-4 shrink-0" />
@@ -250,7 +276,7 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 aria-describedby={`${fieldId}-upload-help`}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 /></>
@@ -384,13 +410,7 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
                   <label htmlFor={`${fieldId}-field-3`} className="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 uppercase mb-1">
                     Weekly Focus Goal
                   </label>
-                  <input id={`${fieldId}-field-3`}
-                    type="text"
-                    value={customGoal}
-                    onChange={(e) => setCustomGoal(e.target.value)}
-                    placeholder="e.g. Next week focus goals..."
-                    className="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
-                  />
+                  <input id={`${fieldId}-field-3`} type="text" value={customGoal} onChange={(e) => setCustomGoal(e.target.value)} placeholder="e.g. Next week focus goals..." className="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white" maxLength={20000}/>
                 </div>
               </div>
             )}

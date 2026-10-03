@@ -178,27 +178,14 @@ export const AddProgramModal: React.FC<AddProgramModalProps> = ({
             <label htmlFor={`${fieldId}-field-1`} className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Track / Program Title <span className="text-rose-500">*</span>
             </label>
-            <input id={`${fieldId}-field-1`}
-              type="text"
-              required
-              placeholder="e.g. KVS TGT, Python, DSSSB PRT"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-            />
+            <input id={`${fieldId}-field-1`} type="text" required placeholder="e.g. KVS TGT, Python, DSSSB PRT" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" maxLength={500}/>
           </div>
 
           <div>
             <label htmlFor={`${fieldId}-field-2`} className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Badge / Tag
             </label>
-            <input id={`${fieldId}-field-2`}
-              type="text"
-              placeholder="e.g. 2026, Prep"
-              value={badge}
-              onChange={(e) => setBadge(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-            />
+            <input id={`${fieldId}-field-2`} type="text" placeholder="e.g. 2026, Prep" value={badge} onChange={(e) => setBadge(e.target.value)} className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" maxLength={500}/>
           </div>
         </div>
 
@@ -207,13 +194,7 @@ export const AddProgramModal: React.FC<AddProgramModalProps> = ({
           <label htmlFor={`${fieldId}-field-3`} className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Subtitle / Overview
           </label>
-          <input id={`${fieldId}-field-3`}
-            type="text"
-            placeholder="e.g. Complete Syllabus with Subject Modules & Revisions"
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-          />
+          <input id={`${fieldId}-field-3`} type="text" placeholder="e.g. Complete Syllabus with Subject Modules & Revisions" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" maxLength={500}/>
         </div>
 
         {/* Color theme */}
@@ -262,20 +243,8 @@ export const AddProgramModal: React.FC<AddProgramModalProps> = ({
                 className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/80 dark:border-slate-700/60 space-y-2.5"
               >
                 <div className="subject-fields">
-                  <><label className="sr-only" htmlFor={`${fieldId}-field-4-${idx}`}>Subject code</label><input id={`${fieldId}-field-4-${idx}`}
-                    type="text"
-                    placeholder="Code (e.g. SUB-1)"
-                    value={sub.code}
-                    onChange={(e) => handleSubjectChange(idx, 'code', e.target.value)}
-                    className="w-24 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
-                  /></>
-                  <><label className="sr-only" htmlFor={`${fieldId}-field-5-${idx}`}>Subject name</label><input id={`${fieldId}-field-5-${idx}`}
-                    type="text"
-                    placeholder="Subject Name (e.g. General English, Pedagogy)"
-                    value={sub.name}
-                    onChange={(e) => handleSubjectChange(idx, 'name', e.target.value)}
-                    className="min-w-0 flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
-                  /></>
+                  <><label className="sr-only" htmlFor={`${fieldId}-field-4-${idx}`}>Subject code</label><input id={`${fieldId}-field-4-${idx}`} type="text" placeholder="Code (e.g. SUB-1)" value={sub.code} onChange={(e) => handleSubjectChange(idx, 'code', e.target.value)} className="w-24 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" maxLength={500}/></>
+                  <><label className="sr-only" htmlFor={`${fieldId}-field-5-${idx}`}>Subject name</label><input id={`${fieldId}-field-5-${idx}`} type="text" placeholder="Subject Name (e.g. General English, Pedagogy)" value={sub.name} onChange={(e) => handleSubjectChange(idx, 'name', e.target.value)} className="min-w-0 flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" maxLength={500}/></>
                   {initialSubjects.length > 1 && (
                     <button aria-label={`Remove subject ${idx + 1}`}
                       type="button"
@@ -288,13 +257,7 @@ export const AddProgramModal: React.FC<AddProgramModalProps> = ({
                 </div>
 
                 <div>
-                  <><label className="sr-only" htmlFor={`${fieldId}-field-6-${idx}`}>Chapter titles, one per line</label><textarea id={`${fieldId}-field-6-${idx}`}
-                    rows={2}
-                    placeholder="Chapter titles (one per line, e.g.&#10;1. Nouns and Pronouns&#10;2. Subject-Verb Agreement)"
-                    value={sub.chaptersText}
-                    onChange={(e) => handleSubjectChange(idx, 'chaptersText', e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
-                  /></>
+                  <><label className="sr-only" htmlFor={`${fieldId}-field-6-${idx}`}>Chapter titles, one per line</label><textarea id={`${fieldId}-field-6-${idx}`} rows={2} placeholder="Chapter titles (one per line, e.g.&#10;1. Nouns and Pronouns&#10;2. Subject-Verb Agreement)" value={sub.chaptersText} onChange={(e) => handleSubjectChange(idx, 'chaptersText', e.target.value)} className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400" maxLength={20000}/></>
                 </div>
               </div>
             ))}

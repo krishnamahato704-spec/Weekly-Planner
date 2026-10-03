@@ -1,3 +1,5 @@
+import { readStored, writeStored, removeStored } from './storage';
+import { validateSchedule, validateReminders } from './dataValidation';
 import {
   SpacedRevisionSchedule,
   ChapterRevisionDueInfo,
@@ -29,46 +31,24 @@ export const DEFAULT_REMINDER_PREFERENCES: ReminderPreferences = {
 };
 
 export const loadRevisionSchedule = (): SpacedRevisionSchedule => {
-  try {
-    const saved = localStorage.getItem(REVISION_SCHEDULE_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed && Array.isArray(parsed.intervalsDays) && parsed.intervalsDays.length > 0) {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.error('Failed to load revision schedule:', err);
-  }
-  return DEFAULT_REVISION_SCHEDULE;
+  return readStored(REVISION_SCHEDULE_STORAGE_KEY, validateSchedule, DEFAULT_REVISION_SCHEDULE);
 };
 
 export const saveRevisionSchedule = (schedule: SpacedRevisionSchedule): void => {
   try {
-    localStorage.setItem(REVISION_SCHEDULE_STORAGE_KEY, JSON.stringify(schedule));
+    writeStored(REVISION_SCHEDULE_STORAGE_KEY, schedule);
   } catch (err) {
     console.error('Failed to save revision schedule:', err);
   }
 };
 
 export const loadReminderPreferences = (): ReminderPreferences => {
-  try {
-    const saved = localStorage.getItem(REMINDER_PREFS_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed.inAppRemindersEnabled === 'boolean') {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.error('Failed to load reminder preferences:', err);
-  }
-  return DEFAULT_REMINDER_PREFERENCES;
+  return readStored(REMINDER_PREFS_STORAGE_KEY, validateReminders, DEFAULT_REMINDER_PREFERENCES);
 };
 
 export const saveReminderPreferences = (prefs: ReminderPreferences): void => {
   try {
-    localStorage.setItem(REMINDER_PREFS_STORAGE_KEY, JSON.stringify(prefs));
+    writeStored(REMINDER_PREFS_STORAGE_KEY, prefs);
   } catch (err) {
     console.error('Failed to save reminder preferences:', err);
   }

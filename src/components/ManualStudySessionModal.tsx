@@ -120,14 +120,7 @@ export const ManualStudySessionModal: React.FC<ManualStudySessionModalProps> = (
           </select>
 
           {selectedTaskId === 'custom' && (
-            <><label className="sr-only" htmlFor={`${fieldId}-field-2`}>Study topic</label><input id={`${fieldId}-field-2`}
-              type="text"
-              required
-              placeholder="Enter study topic / subject..."
-              value={customTaskTitle}
-              onChange={(e) => setCustomTaskTitle(e.target.value)}
-              className="mt-2 w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            /></>
+            <><label className="sr-only" htmlFor={`${fieldId}-field-2`}>Study topic</label><input id={`${fieldId}-field-2`} type="text" required placeholder="Enter study topic / subject..." value={customTaskTitle} onChange={(e) => setCustomTaskTitle(e.target.value)} className="mt-2 w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={500}/></>
           )}
         </div>
 
@@ -216,13 +209,7 @@ export const ManualStudySessionModal: React.FC<ManualStudySessionModalProps> = (
           <label htmlFor={`${fieldId}-field-6`} className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
             Notes (Optional)
           </label>
-          <textarea id={`${fieldId}-field-6`}
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="What did you accomplish in this session?"
-            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-          />
+          <textarea id={`${fieldId}-field-6`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="What did you accomplish in this session?" className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50" maxLength={20000}/>
         </div>
 
         {/* Footer buttons */}

@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useSyncExternalStore } from 'react';
 import { Plus, Search, Trash2, Edit3, Check, CalendarDays, Clock, CheckCircle2, Sparkles, BookOpen, GraduationCap, RotateCcw, ArrowRight, Flag, ListTodo, ChevronDown } from 'lucide-react';
 import { Task, WeekPlan, TaskFilter, Priority } from '../types';
 import { CompletionGauge } from './CompletionGauge';
 import { PageHeader, SegmentedControl } from './ui/Primitives';
 import { formatWeekRange } from '../utils/dateUtils';
 import { selectTasks, summarizeTasks } from '../utils/taskUtils';
+import { getStorageIssues, subscribeStorage } from '../utils/storage';
 
 interface CurrentWeekViewProps {
   week: WeekPlan;
@@ -61,6 +62,7 @@ function TaskRow({ task, onToggle, onEdit, onDelete }: {
 
 export function CurrentWeekView({ week, allWeeks, onSelectWeekId, onToggleTask, onDeleteTask, onEditTask,
   onOpenAddTaskModal, onQuickAddTask, onOpenNewWeekModal, onTriggerConfetti, onTransferRemainingToNextWeek }: CurrentWeekViewProps) {
+  const savingUnavailable = useSyncExternalStore(subscribeStorage, getStorageIssues).length > 0;
   const [filter, setFilter] = useState<TaskFilter>('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'default' | 'priority' | 'incomplete_first' | 'title'>('default');
@@ -102,7 +104,7 @@ export function CurrentWeekView({ week, allWeeks, onSelectWeekId, onToggleTask, 
         }}>
           <div className="relative">
             <Plus aria-hidden="true" size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-            <input className="field pl-11" aria-label="Quick task title" value={quickTitle} onChange={event => setQuickTitle(event.target.value)} placeholder="What would you like to work on?" />
+            <input className="field pl-11" aria-label="Quick task title" value={quickTitle} onChange={event => setQuickTitle(event.target.value)} placeholder="What would you like to work on?" maxLength={500}/>
           </div>
           <div className="quick-add-options">
             <select className="field" aria-label="Quick task category" value={quickCategory} onChange={event => setQuickCategory(event.target.value)}>
@@ -123,7 +125,7 @@ export function CurrentWeekView({ week, allWeeks, onSelectWeekId, onToggleTask, 
           ]} />
           <div className="relative task-search">
             <Search aria-hidden="true" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-            <input className="field pl-9" aria-label="Search weekly tasks" placeholder="Search tasks..." value={searchQuery} onChange={event => setSearchQuery(event.target.value)} />
+            <input className="field pl-9" aria-label="Search weekly tasks" placeholder="Search tasks..." value={searchQuery} onChange={event => setSearchQuery(event.target.value)} maxLength={500}/>
           </div>
           <div className="task-sort">
             <select className="field" aria-label="Filter task priority" value={priorityFilter} onChange={event => setPriorityFilter(event.target.value)}>
@@ -143,7 +145,7 @@ export function CurrentWeekView({ week, allWeeks, onSelectWeekId, onToggleTask, 
           <p className="text-sm text-muted mt-2">{stats.total === 0 ? 'Add your first task and give your week a direction.' : 'Try another filter or a different search.'}</p>
           <button type="button" className="button button-secondary mt-5" onClick={stats.total === 0 ? onOpenAddTaskModal : resetFilters}>{stats.total === 0 ? 'Add your first task' : 'Clear filters'}</button>
         </div>}
-        <div className="task-panel-footer"><span>{sortedTasks.length} of {stats.total} tasks shown</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 aria-hidden="true" size={13} />Changes saved automatically</span></div>
+        <div className="task-panel-footer"><span>{sortedTasks.length} of {stats.total} tasks shown</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 aria-hidden="true" size={13} />{savingUnavailable ? 'Saving needs attention' : 'Changes saved automatically'}</span></div>
       </section>
 
       <aside className="weekly-insights" aria-label="Weekly overview">

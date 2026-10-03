@@ -1,4 +1,5 @@
 import { Dialog } from './ui/Dialog';
+import { safeExternalUrl, validateNcertNotes } from '../utils/dataValidation';
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -53,6 +54,7 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
   const [newResUrl, setNewResUrl] = useState('');
   const [isAddingResource, setIsAddingResource] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialNotes) {
@@ -68,6 +70,7 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
     setNewResTitle('');
     setNewResUrl('');
     setHasUnsavedChanges(false);
+    setErrorMessage(null);
   }, [isOpen, chapterId, initialNotes]);
 
   if (!isOpen) return null;
@@ -79,18 +82,23 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
       resources,
       updatedAt: new Date().toISOString(),
     };
-    onSaveNotes(chapterId, updatedData);
-    setHasUnsavedChanges(false);
+    try {
+      const validated = validateNcertNotes({ [chapterId]: updatedData });
+      onSaveNotes(chapterId, validated[chapterId]);
+      setHasUnsavedChanges(false);
+      setErrorMessage(null);
+    } catch { setErrorMessage('Use valid HTTP or HTTPS links without embedded passwords. Notes may contain up to 20,000 characters.'); }
   };
 
   const handleAddResource = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newResUrl.trim()) return;
 
-    let url = newResUrl.trim();
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = `https://${url}`;
-    }
+    if (resources.length >= 100) { setErrorMessage('A chapter can have up to 100 resource links.'); return; }
+    let url: string;
+    try { url = safeExternalUrl(newResUrl); }
+    catch { setErrorMessage('Use a valid HTTP or HTTPS resource link without embedded passwords.'); return; }
+    setErrorMessage(null);
 
     const title = newResTitle.trim() || 'Resource Link';
     const newRes: ChapterResourceLink = {
@@ -113,11 +121,8 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
 
   // Safe external link opener
   const handleOpenExternal = (url: string) => {
-    let safeUrl = url.trim();
-    if (!safeUrl.startsWith('http://') && !safeUrl.startsWith('https://')) {
-      safeUrl = `https://${safeUrl}`;
-    }
-    window.open(safeUrl, '_blank', 'noopener,noreferrer');
+    try { const safeUrl = safeExternalUrl(url); if (safeUrl) window.open(safeUrl, '_blank', 'noopener,noreferrer'); }
+    catch { setErrorMessage('This resource link could not be opened. Use a valid HTTP or HTTPS URL.'); }
   };
 
   const hasValidPrimaryLink = primaryLink.trim().length > 0;
@@ -158,6 +163,7 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
 
       {/* Scrollable Content Body */}
       <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
+        {errorMessage && <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">{errorMessage}</p>}
         {/* Section 1: Notes Textarea */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
@@ -169,16 +175,10 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
               Plain text or bullet points
             </span>
           </div>
-          <><label className="sr-only" htmlFor={`${fieldId}-field-1`}>Jot down key takeaways, important dates, formulas, memory tricks, or exam focal points</label><textarea id={`${fieldId}-field-1`}
-            rows={6}
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              setHasUnsavedChanges(true);
-            }}
-            placeholder="Jot down key takeaways, important dates, formulas, memory tricks, or exam focal points..."
-            className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/50 leading-relaxed font-sans"
-          /></>
+          <><label className="sr-only" htmlFor={`${fieldId}-field-1`}>Jot down key takeaways, important dates, formulas, memory tricks, or exam focal points</label><textarea id={`${fieldId}-field-1`} rows={6} value={text} onChange={(e) => {
+        setText(e.target.value);
+        setHasUnsavedChanges(true);
+    }} placeholder="Jot down key takeaways, important dates, formulas, memory tricks, or exam focal points..." className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/50 leading-relaxed font-sans" maxLength={20000}/></>
         </div>
 
         {/* Section 2: External Primary Notes Link */}
@@ -199,16 +199,10 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
               </button>
             )}
           </div>
-          <><label className="sr-only" htmlFor={`${fieldId}-field-2`}></label><input id={`${fieldId}-field-2`}
-            type="url"
-            value={primaryLink}
-            onChange={(e) => {
-              setPrimaryLink(e.target.value);
-              setHasUnsavedChanges(true);
-            }}
-            placeholder="e.g. Google Docs, Google Drive, Notion, or OneNote link"
-            className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-          /></>
+          <><label className="sr-only" htmlFor={`${fieldId}-field-2`}></label><input id={`${fieldId}-field-2`} type="url" value={primaryLink} onChange={(e) => {
+        setPrimaryLink(e.target.value);
+        setHasUnsavedChanges(true);
+    }} placeholder="e.g. Google Docs, Google Drive, Notion, or OneNote link" className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50" maxLength={2048}/></>
           <p className="text-[11px] text-slate-400">
             Paste your digital notebook or Google Doc URL for instant 1-click access.
           </p>
@@ -281,21 +275,8 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
               className="p-3 rounded-xl border border-teal-200 dark:border-teal-800/80 bg-teal-50/40 dark:bg-teal-950/20 space-y-2 text-xs"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <><label className="sr-only" htmlFor={`${fieldId}-field-3`}>Resource title</label><input id={`${fieldId}-field-3`}
-                  type="text"
-                  value={newResTitle}
-                  onChange={(e) => setNewResTitle(e.target.value)}
-                  placeholder="Resource Title (e.g. NCERT PDF, YouTube Lecture)"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                /></>
-                <><label className="sr-only" htmlFor={`${fieldId}-field-4`}>Resource URL</label><input id={`${fieldId}-field-4`}
-                  type="url"
-                  required
-                  value={newResUrl}
-                  onChange={(e) => setNewResUrl(e.target.value)}
-                  placeholder="URL (https://...)"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                /></>
+                <><label className="sr-only" htmlFor={`${fieldId}-field-3`}>Resource title</label><input id={`${fieldId}-field-3`} type="text" value={newResTitle} onChange={(e) => setNewResTitle(e.target.value)} placeholder="Resource Title (e.g. NCERT PDF, YouTube Lecture)" className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white" maxLength={500}/></>
+                <><label className="sr-only" htmlFor={`${fieldId}-field-4`}>Resource URL</label><input id={`${fieldId}-field-4`} type="url" required value={newResUrl} onChange={(e) => setNewResUrl(e.target.value)} placeholder="URL (https://...)" className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white" maxLength={2048}/></>
               </div>
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <button

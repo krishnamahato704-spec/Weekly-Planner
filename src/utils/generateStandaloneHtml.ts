@@ -18,16 +18,16 @@ export function generateStandaloneHtml(): string {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17" integrity="sha384-igm5BeiBt36UU4gqwWS7imYmelpTsZlQ45FZf+XBn9MuJbn4nQr7yx1yFydocC/K" crossorigin="anonymous"></script>
   <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
   <!-- Canvas-Confetti CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js" integrity="sha384-xgNdoEQu0JeBEAN3/f7mrS+EPOsrmARCvhS7PEpk7QI2wvo4YOF3xY3EjQGKHAY9" crossorigin="anonymous"></script>
   <!-- Lucide Icons CDN -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.546.0/dist/umd/lucide.min.js" integrity="sha384-Kq+4cC9XukddecuyuPBAdQSNu6fWywS3SOMdWmEib20GkBqIVVrsktVw64HAXN10" crossorigin="anonymous"></script>
 
   <script>
-    tailwind.config = {
+    if (window.tailwind) tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
@@ -62,10 +62,21 @@ export function generateStandaloneHtml(): string {
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .basic-ui .hidden { display: none; }
+    .basic-ui body { padding: 12px; overflow-wrap: anywhere; background: #f7f8fc; color: #182235; }
+    .basic-ui.dark body { background: #101522; color: #ecf0f8; }
+    .basic-ui button { min-height: 44px; padding: 8px 12px; margin: 4px; border: 1px solid #78859a; border-radius: 8px; }
+    .basic-ui input:not([type="checkbox"]), .basic-ui select { max-width: 100%; min-height: 44px; font-size: 16px; }
+    .basic-ui canvas { max-width: 100%; }
+    .basic-ui header, .basic-ui main > div { margin-block: 16px; }
     .tabular-nums { font-variant-numeric: tabular-nums; }
   </style>
 </head>
 <body class="bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 min-h-screen transition-colors duration-200">
+  <p id="dependency-warning" role="status" hidden style="margin:16px;padding:12px;background:#fffbeb;color:#182235">Some display resources could not load. Tasks remain available. Connect to the internet and reload for charts and icons.</p>
+  <aside id="storage-warning" role="alert" hidden style="margin:16px;padding:16px;border:2px solid #92400e;border-radius:12px;background:#fffbeb;color:#0f172a">
+    <p id="storage-warning-text"></p><button type="button" onclick="downloadRecovery()">Download recovery data</button>
+  </aside>
   
   <!-- Navigation Bar -->
   <header class="sticky top-0 z-30 w-full border-b border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md">
@@ -241,7 +252,7 @@ export function generateStandaloneHtml(): string {
           <i aria-hidden="true" data-lucide="search" class="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
           <input
             aria-label="Search tasks" id="task-search-input"
-            type="text"
+            type="text" maxlength="500"
             oninput="renderTasks()"
             placeholder="Search tasks..."
             class="w-full pl-9 pr-3.5 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -276,7 +287,7 @@ export function generateStandaloneHtml(): string {
           <span class="text-xs text-neutral-500 dark:text-neutral-400">Week-over-week performance</span>
         </div>
         <div class="h-64 sm:h-80 w-full relative">
-          <canvas role="img" aria-label="Weekly completion percentages. Exact values appear in the week cards below." id="progressChart"></canvas>
+          <p id="chart-unavailable" hidden>Chart unavailable. Progress totals remain available in the week cards.</p><canvas role="img" aria-label="Weekly completion percentages. Exact values appear in the week cards below." id="progressChart"></canvas>
         </div>
       </div>
 
@@ -307,7 +318,7 @@ export function generateStandaloneHtml(): string {
         </div>
         <div>
           <label for="new-week-goal" class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Weekly Focus Goal</label>
-          <input id="new-week-goal" type="text" placeholder="e.g. Master NCERT Class 7 & complete 2 chapters" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
+          <input id="new-week-goal" type="text" maxlength="500" placeholder="e.g. Master NCERT Class 7 & complete 2 chapters" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
         </div>
         <div class="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
           <label class="flex items-center gap-2 cursor-pointer">
@@ -334,7 +345,7 @@ export function generateStandaloneHtml(): string {
         <input type="hidden" id="task-edit-id" value="">
         <div>
           <label for="task-title-input" class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Task Title *</label>
-          <input id="task-title-input" type="text" required placeholder="e.g. Hindi Grammar 3 chapters" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
+          <input id="task-title-input" type="text" maxlength="500" required placeholder="e.g. Hindi Grammar 3 chapters" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -359,7 +370,7 @@ export function generateStandaloneHtml(): string {
         </div>
         <div>
           <label for="task-notes-input" class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Notes / Target</label>
-          <input id="task-notes-input" type="text" placeholder="e.g. 1 hour daily" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
+          <input id="task-notes-input" type="text" maxlength="500" placeholder="e.g. 1 hour daily" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
         </div>
         <div class="flex justify-end gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
           <button type="button" onclick="closeTaskModal()" class="px-4 py-2 text-xs font-medium rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">Cancel</button>
@@ -404,6 +415,41 @@ export function generateStandaloneHtml(): string {
     let activeWeekId = '';
     let currentFilter = 'all';
     let chartInstance = null;
+    let storageBlocked = false;
+    let originalSavedData = null;
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+    }
+    function showStorageWarning(message) {
+      const warning = document.getElementById('storage-warning');
+      warning.hidden = false;
+      document.getElementById('storage-warning-text').textContent = message;
+    }
+    function downloadRecovery() {
+      const blob = new Blob([JSON.stringify({ app: 'WeeklyPlan-recovery', originalSavedData, weeks: appData }, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob), anchor = document.createElement('a');
+      anchor.href = url; anchor.download = 'weeklyplan-export-recovery.json'; anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    function normalizeExportData(value) {
+      if (!Array.isArray(value) || !value.length || value.length > 520) throw Error('Invalid weekly plans');
+      const identifiers = new Set();
+      let tasks = 0;
+      const identifier = v => { if (typeof v !== 'string' || !/^[A-Za-z0-9._:-]{1,128}$/.test(v) || ['__proto__', 'prototype', 'constructor'].includes(v)) throw Error('Invalid identifier'); return v; };
+      const text = (v, max, fallback) => { if (v === undefined && fallback !== undefined) return fallback; if (typeof v !== 'string' || v.length > max) throw Error('Invalid text'); return v; };
+      return value.map(w => {
+        if (!w || typeof w !== 'object' || !Array.isArray(w.tasks) || w.tasks.length > 2000 || !Number.isFinite(Date.parse(w.sundayDate))) throw Error('Invalid week');
+        const id = identifier(w.id);
+        if (identifiers.has(id)) throw Error('Duplicate week'); identifiers.add(id);
+        const taskIds = new Set();
+        return { id, sundayDate: text(w.sundayDate, 40), title: text(w.title, 500), focusGoal: text(w.focusGoal, 20000, ''), tasks: w.tasks.map(t => {
+          if (!t || typeof t !== 'object' || ++tasks > 10000 || typeof t.completed !== 'boolean' || !['High', 'Medium', 'Low'].includes(t.priority)) throw Error('Invalid task');
+          const id = identifier(t.id);
+          if (taskIds.has(id)) throw Error('Duplicate task'); taskIds.add(id);
+          return { id, title: text(t.title, 500), category: text(t.category, 100), priority: t.priority, notes: text(t.notes, 20000, ''), completed: t.completed };
+        }) };
+      });
+    }
 
     const SAMPLE_WEEKS = [
       {
@@ -426,17 +472,25 @@ export function generateStandaloneHtml(): string {
     ];
 
     function init() {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!window.tailwind) document.documentElement.classList.add('basic-ui');
+      if (!window.tailwind || !window.lucide || !window.Chart) document.getElementById('dependency-warning').hidden = false;
+      let stored;
+      try { stored = localStorage.getItem(STORAGE_KEY); }
+      catch { showStorageWarning('Saving is unavailable. Keep this tab open and download recovery data before closing it.'); }
+      originalSavedData = stored ?? null;
       if (stored) {
         try {
-          appData = JSON.parse(stored);
-        } catch (e) {
-          appData = SAMPLE_WEEKS;
+          if (stored.length > 10 * 1024 * 1024) throw Error('Saved data is too large');
+          appData = normalizeExportData(JSON.parse(stored, (key, value) => {
+            if (['__proto__', 'prototype', 'constructor'].includes(key)) throw Error('Invalid object key');
+            return value;
+          }));
+        } catch {
+          storageBlocked = true;
+          appData = normalizeExportData(SAMPLE_WEEKS);
+          showStorageWarning('Saved data could not be loaded. The original value is preserved. Download recovery data before replacing this file.');
         }
-      } else {
-        appData = SAMPLE_WEEKS;
-        saveData();
-      }
+      } else { appData = normalizeExportData(SAMPLE_WEEKS); saveData(); }
 
       activeWeekId = appData[appData.length - 1]?.id || '2026-09-27';
       
@@ -449,11 +503,14 @@ export function generateStandaloneHtml(): string {
       updateWeekSelector();
       renderCurrentWeek();
       renderProgressBoard();
-      lucide.createIcons();
+      if (window.lucide) window.lucide.createIcons();
+      else document.querySelectorAll('i[data-lucide]').forEach(icon => { icon.textContent = ({ x: '×', moon: '◐', sun: '☀', 'edit-3': 'Edit', 'trash-2': 'Delete' })[icon.dataset.lucide] || '•'; });
     }
 
     function saveData() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      if (storageBlocked) return;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
+      catch { showStorageWarning('Changes are not being saved. Download recovery data before closing this tab.'); }
     }
 
     function getActiveWeek() {
@@ -463,7 +520,11 @@ export function generateStandaloneHtml(): string {
     function updateWeekSelector() {
       const sel = document.getElementById('week-selector');
       if (!sel) return;
-      sel.innerHTML = appData.map(w => \`<option value="\${w.id}" \${w.id === activeWeekId ? 'selected' : ''}>\${w.title}</option>\`).join('');
+      sel.replaceChildren(...appData.map(week => {
+        const option = document.createElement('option');
+        option.value = week.id; option.textContent = week.title; option.selected = week.id === activeWeekId;
+        return option;
+      }));
     }
 
     function onSelectWeek(id) {
@@ -493,7 +554,7 @@ export function generateStandaloneHtml(): string {
         navCur.className = 'text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white flex items-center gap-1.5';
         renderProgressBoard();
       }
-      lucide.createIcons();
+      if (window.lucide) window.lucide.createIcons();
     }
 
     function setFilter(filter) {
@@ -592,33 +653,33 @@ export function generateStandaloneHtml(): string {
             <input
               type="checkbox"
               \${task.completed ? 'checked' : ''}
-              aria-label="Toggle task completion" onchange="toggleTask('\${task.id}')"
+              aria-label="Toggle task completion" data-task-id="\${escapeHtml(task.id)}"
               class="mt-1 w-4 h-4 text-emerald-600 rounded border-neutral-300 dark:border-neutral-700 focus:ring-emerald-500 cursor-pointer"
             />
             <div class="flex-1 min-w-0">
               <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100 block truncate \${task.completed ? 'line-through text-neutral-400 dark:text-neutral-500' : ''}">
-                \${task.title}
+                \${escapeHtml(task.title)}
               </span>
-              \${task.notes ? \`<p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">\${task.notes}</p>\` : ''}
+              \${task.notes ? \`<p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">\${escapeHtml(task.notes)}</p>\` : ''}
               <div class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                <span>\${task.category}</span>
+                <span>\${escapeHtml(task.category)}</span>
                 <span>·</span>
-                <span class="\${task.priority === 'High' ? 'text-rose-600 font-semibold' : task.priority === 'Medium' ? 'text-amber-600 font-semibold' : 'text-blue-600 font-semibold'}">\${task.priority}</span>
+                <span class="\${task.priority === 'High' ? 'text-rose-600 font-semibold' : task.priority === 'Medium' ? 'text-amber-600 font-semibold' : 'text-blue-600 font-semibold'}">\${escapeHtml(task.priority)}</span>
               </div>
             </div>
           </div>
           <div class="flex items-center gap-1 opacity-100 transition-opacity">
-            <button aria-label="Edit task" onclick="editTask('\${task.id}')" class="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded">
+            <button aria-label="Edit task" data-action="edit" data-task-id="\${escapeHtml(task.id)}" class="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded">
               <i aria-hidden="true" data-lucide="edit-3" class="w-3.5 h-3.5"></i>
             </button>
-            <button aria-label="Delete task" onclick="deleteTask('\${task.id}')" class="p-1.5 text-neutral-400 hover:text-rose-600 rounded">
+            <button aria-label="Delete task" data-action="delete" data-task-id="\${escapeHtml(task.id)}" class="p-1.5 text-neutral-400 hover:text-rose-600 rounded">
               <i aria-hidden="true" data-lucide="trash-2" class="w-3.5 h-3.5"></i>
             </button>
           </div>
         </div>
       \`).join('');
 
-      lucide.createIcons();
+      if (window.lucide) window.lucide.createIcons();
     }
 
     function toggleTask(id) {
@@ -743,7 +804,7 @@ export function generateStandaloneHtml(): string {
 
       modal.showModal();
       document.body.style.overflow = 'hidden';
-      lucide.createIcons();
+      if (window.lucide) window.lucide.createIcons();
     }
 
     function closeNewWeekModal() {
@@ -845,12 +906,12 @@ export function generateStandaloneHtml(): string {
         return \`
           <div class="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-400 dark:hover:border-neutral-600 cursor-pointer transition-all space-y-3">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-neutral-500 dark:text-neutral-400">\${w.sundayDate}</span>
+              <span class="text-xs font-semibold text-neutral-500 dark:text-neutral-400">\${escapeHtml(w.sundayDate)}</span>
               <span class="text-xs font-bold px-2 py-0.5 rounded border \${badgeBg} tabular-nums">\${pct}% Done</span>
             </div>
             <div>
-              <h3 class="text-base font-bold text-neutral-900 dark:text-white"><button type="button" onclick="inspectWeek('\${w.id}')">\${w.title}</button></h3>
-              <p class="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">\${w.focusGoal || 'No goal set'}</p>
+              <h3 class="text-base font-bold text-neutral-900 dark:text-white"><button type="button" data-action="inspect" data-week-id="\${escapeHtml(w.id)}">\${escapeHtml(w.title)}</button></h3>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">\${escapeHtml(w.focusGoal || 'No goal set')}</p>
             </div>
             <div class="grid grid-cols-3 gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800 text-center">
               <div>
@@ -894,6 +955,7 @@ export function generateStandaloneHtml(): string {
         chartInstance.destroy();
       }
 
+      if (!window.Chart) { document.getElementById('chart-unavailable').hidden = false; return; }
       chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -925,13 +987,26 @@ export function generateStandaloneHtml(): string {
     function toggleTheme() {
       const isDark = document.documentElement.classList.toggle('dark');
       document.getElementById('theme-icon').setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-      lucide.createIcons();
+      if (window.lucide) window.lucide.createIcons();
       if (chartInstance) renderChart();
     }
 
     document.querySelectorAll('dialog').forEach(dialog => {
       dialog.addEventListener('close', () => { document.body.style.overflow = ''; });
       dialog.addEventListener('cancel', () => { document.body.style.overflow = ''; });
+    });
+    document.getElementById('task-list').addEventListener('change', event => {
+      if (event.target.matches('input[data-task-id]')) toggleTask(event.target.dataset.taskId);
+    });
+    document.getElementById('task-list').addEventListener('click', event => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      if (button.dataset.action === 'edit') editTask(button.dataset.taskId);
+      if (button.dataset.action === 'delete') deleteTask(button.dataset.taskId);
+    });
+    document.getElementById('weeks-grid').addEventListener('click', event => {
+      const button = event.target.closest('button[data-action="inspect"]');
+      if (button) inspectWeek(button.dataset.weekId);
     });
     window.onload = init;
   </script>

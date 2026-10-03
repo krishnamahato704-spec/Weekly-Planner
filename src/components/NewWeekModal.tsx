@@ -144,13 +144,7 @@ export const NewWeekModal: React.FC<NewWeekModalProps> = ({
           <label htmlFor={`${fieldId}-field-2`} className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
             Weekly Focus / Main Objective (Optional)
           </label>
-          <input id={`${fieldId}-field-2`}
-            type="text"
-            value={focusGoal}
-            onChange={(e) => setFocusGoal(e.target.value)}
-            placeholder="e.g. Finish NCERT Class 7, Action Research & English vocabulary..."
-            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
-          />
+          <input id={`${fieldId}-field-2`} type="text" value={focusGoal} onChange={(e) => setFocusGoal(e.target.value)} placeholder="e.g. Finish NCERT Class 7, Action Research & English vocabulary..." className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs" maxLength={20000}/>
         </div>
 
         {/* Section 1: Weekly Recurring Routines (Auto Updates) */}

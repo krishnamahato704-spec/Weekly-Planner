@@ -1,3 +1,5 @@
+import { readStored, writeStored, removeStored } from './storage';
+import { validateGoals, validateCapacity, validateCalendar } from './dataValidation';
 import {
   StudyGoals,
   DailyCapacityConfig,
@@ -30,69 +32,36 @@ export const DEFAULT_GOOGLE_CALENDAR_CONFIG: GoogleCalendarIntegrationConfig = {
 };
 
 export const loadStudyGoals = (): StudyGoals => {
-  try {
-    const saved = localStorage.getItem(STUDY_GOALS_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed.weeklyStudyMinutesGoal === 'number') {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.error('Failed to load study goals:', err);
-  }
-  return DEFAULT_STUDY_GOALS;
+  return readStored(STUDY_GOALS_STORAGE_KEY, validateGoals, DEFAULT_STUDY_GOALS);
 };
 
 export const saveStudyGoals = (goals: StudyGoals): void => {
   try {
-    localStorage.setItem(STUDY_GOALS_STORAGE_KEY, JSON.stringify(goals));
+    writeStored(STUDY_GOALS_STORAGE_KEY, goals);
   } catch (err) {
     console.error('Failed to save study goals:', err);
   }
 };
 
 export const loadDailyCapacity = (): DailyCapacityConfig => {
-  try {
-    const saved = localStorage.getItem(DAILY_CAPACITY_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed.weekdayCapacityMinutes === 'number') {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.error('Failed to load daily capacity:', err);
-  }
-  return DEFAULT_DAILY_CAPACITY;
+  return readStored(DAILY_CAPACITY_STORAGE_KEY, validateCapacity, DEFAULT_DAILY_CAPACITY);
 };
 
 export const saveDailyCapacity = (capacity: DailyCapacityConfig): void => {
   try {
-    localStorage.setItem(DAILY_CAPACITY_STORAGE_KEY, JSON.stringify(capacity));
+    writeStored(DAILY_CAPACITY_STORAGE_KEY, capacity);
   } catch (err) {
     console.error('Failed to save daily capacity:', err);
   }
 };
 
 export const loadGoogleCalendarConfig = (): GoogleCalendarIntegrationConfig => {
-  try {
-    const saved = localStorage.getItem(GOOGLE_CALENDAR_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed.connected === 'boolean') {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.error('Failed to load google calendar config:', err);
-  }
-  return DEFAULT_GOOGLE_CALENDAR_CONFIG;
+  return readStored(GOOGLE_CALENDAR_STORAGE_KEY, validateCalendar, DEFAULT_GOOGLE_CALENDAR_CONFIG);
 };
 
 export const saveGoogleCalendarConfig = (config: GoogleCalendarIntegrationConfig): void => {
   try {
-    localStorage.setItem(GOOGLE_CALENDAR_STORAGE_KEY, JSON.stringify(config));
+    writeStored(GOOGLE_CALENDAR_STORAGE_KEY, config);
   } catch (err) {
     console.error('Failed to save google calendar config:', err);
   }

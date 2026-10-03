@@ -1,5 +1,7 @@
 import { Dialog } from './ui/Dialog';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { parseBackup } from '../utils/backup';
+import { MAX_BACKUP_BYTES } from '../utils/dataValidation';
 import {
   Download,
   Upload,
@@ -69,6 +71,8 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
     summary: string;
   } | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const readerRef = useRef<FileReader | null>(null);
+  useEffect(() => () => readerRef.current?.abort(), []);
 
   // Safety confirmation for Clean Slate
   const [resetType, setResetType] = useState<'weekly' | 'ncert' | 'study' | 'entire' | null>(null);
@@ -104,12 +108,17 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    readerRef.current?.abort();
+    setParsedImport(null);
+    if (file.size > MAX_BACKUP_BYTES) { setImportError('Choose a JSON backup smaller than 10 MiB.'); return; }
     const reader = new FileReader();
+    readerRef.current = reader;
     reader.onload = (event) => {
       const content = event.target?.result as string;
       setImportJsonText(content);
       validateAndParse(content);
     };
+    reader.onerror = () => setImportError('The backup could not be read. Choose the file again.');
     reader.readAsText(file);
   };
 
@@ -119,52 +128,9 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
     if (!rawText.trim()) return;
 
     try {
-      const parsed = JSON.parse(rawText);
-
-      // Handle standard Unified Backup (v4/v5)
-      if (parsed.app === 'WeeklyPlan' && parsed.data) {
-        const d = parsed.data as FullBackupData;
-        const weeksCount = d.weeks?.length || 0;
-        const tasksCount = d.weeks?.reduce((acc, w) => acc + (w.tasks?.length || 0), 0) || 0;
-        const ncertChaptersWithProg = Object.keys(d.ncertProgress || {}).length;
-        const sessionsCount = d.studySessions?.length || 0;
-
-        setParsedImport({
-          data: d,
-          summary: `${weeksCount} weeks (${tasksCount} tasks), ${ncertChaptersWithProg} NCERT progress records, ${sessionsCount} study sessions.`,
-        });
-        return;
-      }
-
-      // Handle legacy NCERT-only backup
-      if (parsed.type === 'ncert_social_science_progress' && parsed.progress) {
-        const legacyNcertStore = parsed.progress;
-        const merged: FullBackupData = {
-          ...currentData,
-          ncertProgress: legacyNcertStore,
-        };
-        setParsedImport({
-          data: merged,
-          summary: `Legacy NCERT backup with ${Object.keys(legacyNcertStore).length} chapter progress records.`,
-        });
-        return;
-      }
-
-      // Handle raw object with ncertProgress or weeks
-      if (parsed.weeks || parsed.ncertProgress) {
-        const merged: FullBackupData = {
-          ...currentData,
-          ...(parsed.weeks ? { weeks: parsed.weeks } : {}),
-          ...(parsed.ncertProgress ? { ncertProgress: parsed.ncertProgress } : {}),
-        };
-        setParsedImport({
-          data: merged,
-          summary: `Partial backup payload recognized.`,
-        });
-        return;
-      }
-
-      throw new Error('Unsupported backup format. File must be a valid WeeklyPlan backup JSON.');
+      const data = parseBackup(rawText, currentData);
+      const tasksCount = data.weeks.reduce((count, week) => count + week.tasks.length, 0);
+      setParsedImport({ data, summary: `${data.weeks.length} weeks (${tasksCount} tasks), ${Object.keys(data.ncertProgress).length} NCERT progress records, ${data.studySessions?.length ?? 0} study sessions.` });
     } catch (err: any) {
       setImportError(err.message || 'Invalid JSON file.');
     }
@@ -176,9 +142,13 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
     // Safety backup first before destructive action (P2.5)
     downloadSafetyBackup();
 
-    onImportFullBackup(parsedImport.data, mode);
-    onShowToast(`Planner restored successfully (${mode === 'replace' ? 'Full Replace' : 'Merged'})!`);
-    onClose();
+    try {
+      onImportFullBackup(parsedImport.data, mode);
+      onShowToast(`Planner restored successfully (${mode === 'replace' ? 'Full Replace' : 'Merged'})!`);
+      onClose();
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : 'The backup could not be restored.');
+    }
   };
 
   const handleConfirmReset = () => {
@@ -187,6 +157,7 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
     // Download safety backup before any reset
     downloadSafetyBackup();
 
+    try {
     if (resetType === 'weekly') {
       onResetWeeklyTasks();
       onShowToast('Weekly tasks reset.');
@@ -208,10 +179,14 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
     setResetType(null);
     setResetConfirmationText('');
     onClose();
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : 'The reset could not be saved.');
+    }
   };
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose} labelledBy={dialogTitleId} className="modal-panel overflow-y-auto w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 space-y-4 flex flex-col">
+      {activeTab === 'reset' && importError && <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">{importError}</p>}
       {/* Header */}
       <div className="flex items-start justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">
@@ -344,16 +319,10 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
               />
             </div>
 
-            <><label className="sr-only" htmlFor={`${fieldId}-field-2`}>Or paste backup JSON content here</label><textarea id={`${fieldId}-field-2`}
-              rows={4}
-              value={importJsonText}
-              onChange={(e) => {
-                setImportJsonText(e.target.value);
-                validateAndParse(e.target.value);
-              }}
-              placeholder="Or paste backup JSON content here..."
-              className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            /></>
+            <><label className="sr-only" htmlFor={`${fieldId}-field-2`}>Or paste backup JSON content here</label><textarea id={`${fieldId}-field-2`} rows={4} value={importJsonText} onChange={(e) => {
+        setImportJsonText(e.target.value);
+        validateAndParse(e.target.value);
+    }} placeholder="Or paste backup JSON content here..." className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={10485760}/></>
 
             {importError && (
               <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-400 text-xs flex items-center gap-2">
@@ -473,7 +442,7 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
                     <span>Reset Entire Planner (Clean Slate)</span>
                   </div>
                   <div className="text-[11px] text-rose-800/80 dark:text-rose-300/80 mt-0.5">
-                    Removes all weekly task completion, NCERT checkboxes, notes, revision history, and study sessions. Preserves the active syllabus tracks.
+                    Replaces weeks and academic tracks with the starter plan. Clears NCERT notes, progress, revision history, and study sessions, and restores default study settings. A safety backup downloads first.
                   </div>
                 </div>
 
@@ -482,13 +451,7 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
                     <p className="font-semibold text-rose-900 dark:text-rose-200">
                       Type <code className="font-mono text-rose-600 bg-rose-100 dark:bg-rose-950 px-1 py-0.5 rounded">RESET</code> to confirm full purge:
                     </p>
-                    <><label className="sr-only" htmlFor={`${fieldId}-field-3`}>RESET</label><input id={`${fieldId}-field-3`}
-                      type="text"
-                      value={resetConfirmationText}
-                      onChange={(e) => setResetConfirmationText(e.target.value)}
-                      placeholder="RESET"
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-rose-300 dark:border-rose-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white uppercase font-bold focus:outline-none focus:ring-2 focus:ring-rose-500"
-                    /></>
+                    <><label className="sr-only" htmlFor={`${fieldId}-field-3`}>RESET</label><input id={`${fieldId}-field-3`} type="text" value={resetConfirmationText} onChange={(e) => setResetConfirmationText(e.target.value)} placeholder="RESET" className="w-full px-3 py-1.5 text-xs rounded-lg border border-rose-300 dark:border-rose-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white uppercase font-bold focus:outline-none focus:ring-2 focus:ring-rose-500" maxLength={500}/></>
                     <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
                       <button
                         type="button"

@@ -85,13 +85,7 @@ export const FinishStudySessionModal: React.FC<FinishStudySessionModalProps> = (
         <label htmlFor={`${fieldId}-field-1`} className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
           Session Notes (Optional)
         </label>
-        <textarea id={`${fieldId}-field-1`}
-          rows={2}
-          value={sessionNotes}
-          onChange={(e) => setSessionNotes(e.target.value)}
-          placeholder="Key concepts covered, questions for teacher, pages read..."
-          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-        />
+        <textarea id={`${fieldId}-field-1`} rows={2} value={sessionNotes} onChange={(e) => setSessionNotes(e.target.value)} placeholder="Key concepts covered, questions for teacher, pages read..." className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50" maxLength={20000}/>
       </div>
 
       {/* Action Buttons: Mark Task Complete vs Save Session Only */}

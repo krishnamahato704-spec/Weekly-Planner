@@ -1,3 +1,5 @@
+import { readStored, writeStored } from './storage';
+import { validateNcertProgress, validateNcertNotes } from './dataValidation';
 export interface NcertChapter {
   id: string;
   chapterNumber: number;
@@ -699,7 +701,7 @@ export function migrateNcertProgressStore(store: Record<string, any>): NcertProg
   const migrated: NcertProgressStore = {};
   if (!store || typeof store !== 'object') return migrated;
 
-  for (const [chId, prog] of Object.entries(store)) {
+  for (const [chId, prog] of Object.entries(validateNcertProgress(store))) {
     if (!prog || typeof prog !== 'object') continue;
     const history: RevisionEvent[] = Array.isArray(prog.revisionHistory)
       ? [...prog.revisionHistory]
@@ -733,51 +735,13 @@ export function migrateNcertProgressStore(store: Record<string, any>): NcertProg
 }
 
 export function loadNcertProgress(): NcertProgressStore {
-  try {
-    const raw =
-      localStorage.getItem(NCERT_STORAGE_KEY) ||
-      localStorage.getItem('ncertSocialScienceProgress_v2') ||
-      localStorage.getItem('ncertSocialScienceProgress_v1') ||
-      localStorage.getItem('ncertSocialScienceProgress');
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return typeof parsed === 'object' && parsed !== null ? migrateNcertProgressStore(parsed) : {};
-  } catch (err) {
-    console.error('Failed to load NCERT progress from localStorage:', err);
-    return {};
-  }
+  return readStored([NCERT_STORAGE_KEY, 'ncertSocialScienceProgress_v2', 'ncertSocialScienceProgress_v1', 'ncertSocialScienceProgress'], value => migrateNcertProgressStore(validateNcertProgress(value)), {});
 }
-
-export function saveNcertProgress(store: NcertProgressStore): void {
-  try {
-    localStorage.setItem(NCERT_STORAGE_KEY, JSON.stringify(store));
-  } catch (err) {
-    console.error('Failed to save NCERT progress to localStorage:', err);
-  }
-}
-
-// Chapter Notes Storage Operations
+export function saveNcertProgress(store: NcertProgressStore): void { writeStored(NCERT_STORAGE_KEY, store); }
 export function loadNcertNotes(): NcertNotesStore {
-  try {
-    const raw =
-      localStorage.getItem(NCERT_NOTES_STORAGE_KEY) ||
-      localStorage.getItem('ncertChapterNotes');
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return typeof parsed === 'object' && parsed !== null ? parsed : {};
-  } catch (err) {
-    console.error('Failed to load NCERT notes from localStorage:', err);
-    return {};
-  }
+  return readStored([NCERT_NOTES_STORAGE_KEY, 'ncertChapterNotes'], validateNcertNotes, {});
 }
-
-export function saveNcertNotes(store: NcertNotesStore): void {
-  try {
-    localStorage.setItem(NCERT_NOTES_STORAGE_KEY, JSON.stringify(store));
-  } catch (err) {
-    console.error('Failed to save NCERT notes to localStorage:', err);
-  }
-}
+export function saveNcertNotes(store: NcertNotesStore): void { writeStored(NCERT_NOTES_STORAGE_KEY, store); }
 
 export function hasChapterNotes(note?: ChapterNoteData): { hasText: boolean; hasLink: boolean } {
   if (!note) return { hasText: false, hasLink: false };
