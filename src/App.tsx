@@ -22,6 +22,7 @@ import { INITIAL_PROGRAM_TABS } from './utils/academicProgramsData';
 import { formatWeekTitle, getSunday, toDateKey, formatWeekRange, getNextSunday, parseDateKey } from './utils/dateUtils';
 import { Navbar } from './components/Navbar';
 import { CurrentWeekView } from './components/CurrentWeekView';
+import { WorkspaceFooter } from './components/workspace/WorkspaceFooter';
 import { PageHeader, SegmentedControl } from './components/ui/Primitives';
 import type { FullBackupData } from './components/UnifiedBackupModal';
 import {
@@ -121,7 +122,7 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = readStoredText(THEME_KEY);
     if (saved) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return true;
   });
 
   // Spaced Revision & Reminders
@@ -217,6 +218,7 @@ export default function App() {
       document.documentElement.classList.remove('dark');
       writeStoredText(THEME_KEY, 'light');
     }
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--canvas').trim());
   }, [isDarkMode]);
 
   // Active week lookup
@@ -754,6 +756,9 @@ export default function App() {
           <CurrentWeekView
             week={activeWeek}
             allWeeks={weeks}
+            programs={programs}
+            onOpenProgram={id => { setSelectedProgramId(id); setMainTab('academic_tracks'); setAcademicSubView('track'); }}
+            onViewHistory={() => { setMainTab('progress'); setProgressSubView('velocity'); }}
             onSelectWeekId={setActiveWeekId}
             onToggleTask={handleToggleTask}
             onDeleteTask={handleDeleteTask}
@@ -972,6 +977,7 @@ export default function App() {
         )}
         </Suspense>
       </main>
+      <WorkspaceFooter onOpenBackup={() => setIsBackupModalOpen(true)} />
 
       {/* ======================================================== */}
       {/* GLOBAL MODALS                                            */}

@@ -1,15 +1,20 @@
 import React, { useMemo, useState, useSyncExternalStore } from 'react';
-import { Plus, Search, Trash2, Edit3, Check, CalendarDays, Clock, CheckCircle2, Sparkles, BookOpen, GraduationCap, RotateCcw, ArrowRight, Flag, ListTodo, ChevronDown } from 'lucide-react';
-import { Task, WeekPlan, TaskFilter, Priority } from '../types';
+import { Plus, Search, Trash2, Edit3, Check, Clock, CheckCircle2, Sparkles, BookOpen, GraduationCap, RotateCcw, ArrowRight, Flag, ListTodo } from 'lucide-react';
+import { Task, WeekPlan, TaskFilter, Priority, ProgramTab } from '../types';
 import { CompletionGauge } from './CompletionGauge';
-import { PageHeader, SegmentedControl } from './ui/Primitives';
-import { formatWeekRange } from '../utils/dateUtils';
+import { SegmentedControl } from './ui/Primitives';
+import { WorkspaceHero } from './workspace/WorkspaceHero';
+import { TrackGrid } from './workspace/TrackGrid';
+import { WeeklyLogs } from './workspace/WeeklyLogs';
 import { selectTasks, summarizeTasks } from '../utils/taskUtils';
 import { getStorageIssues, subscribeStorage } from '../utils/storage';
 
 interface CurrentWeekViewProps {
   week: WeekPlan;
   allWeeks: WeekPlan[];
+  programs: ProgramTab[];
+  onOpenProgram: (id: string) => void;
+  onViewHistory: () => void;
   onSelectWeekId: (id: string) => void;
   onToggleTask: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
@@ -60,7 +65,7 @@ function TaskRow({ task, onToggle, onEdit, onDelete }: {
   </li>;
 }
 
-export function CurrentWeekView({ week, allWeeks, onSelectWeekId, onToggleTask, onDeleteTask, onEditTask,
+export function CurrentWeekView({ week, allWeeks, programs, onOpenProgram, onViewHistory, onSelectWeekId, onToggleTask, onDeleteTask, onEditTask,
   onOpenAddTaskModal, onQuickAddTask, onOpenNewWeekModal, onTriggerConfetti, onTransferRemainingToNextWeek }: CurrentWeekViewProps) {
   const savingUnavailable = useSyncExternalStore(subscribeStorage, getStorageIssues).length > 0;
   const [filter, setFilter] = useState<TaskFilter>('all');
@@ -76,23 +81,14 @@ export function CurrentWeekView({ week, allWeeks, onSelectWeekId, onToggleTask, 
     total: plan.tasks.length, completed: plan.tasks.reduce((count, task) => count + Number(!!task.completed), 0) })), [allWeeks]);
   const resetFilters = () => { setSearchQuery(''); setFilter('all'); setPriorityFilter('all'); };
 
-  return <div className="space-y-7 view-enter">
-    <PageHeader eyebrow="Weekly workspace" title="Your weekly plan"
-      description={<><CalendarDays aria-hidden="true" size={15} className="inline mr-2 -mt-0.5" />{formatWeekRange(week.sundayDate)}<span className="mx-2 text-muted" aria-hidden="true">/</span>{week.title}</>}
-      actions={<>
-        <div className="relative week-select">
-          <select aria-label="Select weekly plan" className="field pr-9" value={week.id} onChange={event => onSelectWeekId(event.target.value)}>
-            {weekOptions.map(plan => <option key={plan.id} value={plan.id}>{plan.title} ({plan.completed}/{plan.total})</option>)}
-          </select>
-          <ChevronDown aria-hidden="true" size={15} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted" />
-        </div>
-        <button type="button" className="button button-secondary" onClick={onOpenNewWeekModal}><Plus aria-hidden="true" size={16} />New Week</button>
-      </>} />
+  return <div className="workspace-stack view-enter">
+    <WorkspaceHero week={week} options={weekOptions} completed={stats.completed} total={stats.total} percentage={stats.percentage} onSelectWeek={onSelectWeekId} onNewWeek={onOpenNewWeekModal} />
+    <TrackGrid programs={programs} onOpenProgram={onOpenProgram} />
 
     <div className="weekly-layout">
       <section className="surface task-panel" aria-labelledby="tasks-heading">
         <div className="task-panel-heading">
-          <div><h2 id="tasks-heading" className="section-title">Weekly tasks <span className="count-badge ml-2">{stats.total}</span></h2>
+          <div><h2 id="tasks-heading" tabIndex={-1} className="section-title">Weekly tasks <span className="count-badge ml-2">{stats.total}</span></h2>
             <p className="mt-1 text-sm text-muted">Your study, work, and personal goals for this week.</p></div>
           <button type="button" className="icon-button" onClick={onOpenAddTaskModal} aria-label="Open task details form" title="Add with more details"><Plus aria-hidden="true" size={20} /></button>
         </div>
@@ -178,5 +174,6 @@ export function CurrentWeekView({ week, allWeeks, onSelectWeekId, onToggleTask, 
         </section>
       </aside>
     </div>
+    <WeeklyLogs weeks={allWeeks} activeWeekId={week.id} onSelectWeek={onSelectWeekId} onViewHistory={onViewHistory} />
   </div>;
 }

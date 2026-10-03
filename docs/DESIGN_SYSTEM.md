@@ -1,95 +1,57 @@
-# WeeklyPlan interface redesign
+# WeeklyPlan charcoal and emerald theme
 
-The weekly checklist is now the main surface. Persistent navigation lives in a desktop sidebar, and progress, weekly focus, and priority counts sit in a secondary column. Below 1280px the columns stack; below 1024px navigation opens in a drawer. The layout adapts to the available space without hiding task actions.
+The weekly workspace opens with a large introduction and progress summary. Learning tracks appear as portfolio cards, followed by the checklist and recent weekly logs. These components use existing planner data and keep the editing tools available.
 
-## What changed
+## Tokens and typography
 
-The previous header combined five destinations and several utility actions in one crowded row. The weekly view repeated the completion count in multiple cards, used several competing accent colors, and gave each task its own card. Small icon controls and clickable text made some actions harder to use with touch or a keyboard.
-
-The new shell shares its navigation data and content between the sidebar and mobile drawer. The checklist uses rows inside one panel, with a clear quick-entry form, completion filters, search, priority filtering, and sorting. Progress appears once in the adjacent overview. Task titles are buttons, completion uses labeled checkboxes, and edit/delete controls have task-specific accessible names. Empty states offer an action or a way to clear filters.
-
-Analytics and history share page headers, metric cards, and view controls. Calendar controls use the same button and field styles. Its small-screen summary no longer has fixed-width boxes that overflow. Academic Tracks now exposes its existing program selection through a labeled select. Study panels use the same surface treatment and slate palette; subject and completion colors remain available where they convey information.
-
-## Tokens and classes
-
-`src/index.css` defines Tailwind 4 theme values and semantic CSS variables. The `.dark` class changes the variables and native color scheme. Components can use the semantic classes together with Tailwind layout utilities.
+`src/styles/tokens.css` owns the semantic colors, spacing, type sizes, radii, shadows, and motion values. `src/styles/workspace.css` styles the portfolio components. `src/index.css` imports both files, maps the Tailwind palette, and styles shared navigation, controls, dialogs, and planning views.
 
 | Token | Light | Dark | Use |
 | --- | --- | --- | --- |
-| `--canvas` | `#f7f8fc` | `#101522` | Application background |
-| `--surface` | `#ffffff` | `#171f30` | Cards, forms, navigation |
-| `--surface-muted` | `#f3f5f9` | `#1e283a` | Inset controls and tracks |
-| `--ink` | `#182235` | `#ecf0f8` | Main text |
-| `--muted` | `#637087` | `#a1afc5` | Supporting text |
-| `--line` | `#e5e9f1` | `#2b3549` | Dividers and boundaries |
-| `--accent` | `#4f46e5` | `#a5b4fc` | Selected navigation and emphasis |
-| `--success` | `#15805e` | `#73d3b1` | Completion |
+| `--canvas` | `#f2f5f1` | `#101612` | Page background |
+| `--surface` | `#ffffff` | `#18211b` | Cards and dialogs |
+| `--surface-muted` | `#edf2ed` | `#202c24` | Inset controls |
+| `--ink` | `#19271e` | `#edf4ed` | Main text |
+| `--muted` | `#536258` | `#adbdaf` | Supporting text |
+| `--line` | `#d8e2d9` | `#34463a` | Surface borders |
+| `--control-border` | `#758579` | `#819b88` | Input and checkbox boundaries |
+| `--accent` | `#096448` | `#95e8b6` | Links, selection, progress |
+| `--accent-soft` | `#e0f2e7` | `#243d2c` | Navigation and icon backgrounds |
+| `--button-fill` | `#166b4d` | `#95e8b6` | Primary actions |
+| `--button-ink` | `#ffffff` | `#112218` | Primary action labels |
+| `--hero-surface` | `#e4efe5` | `#1c2b21` | Intro panel |
 
-Primary buttons retain a white label on an indigo `#4f46e5` background in both themes. Priority uses subdued rose, amber, and blue values. Labels and counts accompany status colors. A partial completion rate no longer turns a chart bar red.
+DM Sans is the body family; Manrope is the display family. Both use system sans-serif fallbacks and swap font display. Caption, small, and body tokens are 12px, 13px, and 15px at the default root size. Section and page titles use `clamp()`. The hero scales from 36px to 64px. Form fields use at least 16px on small screens.
 
-Use these shared classes:
+Spacing tokens range from 4px to 64px: `--space-1` through `--space-8`. Control, card, and hero radii are 12px, 20px, and 28px. Motion tokens are 160ms and 240ms.
 
-- `surface`: themed card background, border, 14px radius, and a small shadow.
-- `button button-primary`, `button button-secondary`: 44px minimum-height actions.
-- `icon-button`, `icon-button-danger`: 44px icon controls with visible hover and focus states.
-- `field`, `field-label`: inputs, selects, and labels. Fields use 16px text at widths up to 820px.
-- `page-title`, `page-description`, `section-title`, `eyebrow`, `text-muted`: the text hierarchy.
-- `segmented-control`, `segment`: mutually exclusive options represented as a labeled group of toggle buttons.
-- `wrap-controls`, `chapter-controls`: wrapping control groups with 44px touch targets.
-- `card-grid`, `compact-card-grid`, `class-progress-grid`: columns sized by the available container width.
-- `modal-panel`: a scrollable dialog surface constrained by the dynamic viewport height.
+The `.dark` class switches semantic values and native `color-scheme`. New visitors start in dark mode; an explicit saved light preference takes precedence. The same-origin `public/theme.js` applies the preference before React loads. React keeps theme-color metadata in sync. Status and subject colors retain text labels.
 
-Class and subject navigation uses labeled selects below 768px. Larger screens use wrapping buttons. Chapter rows stay stacked until 1536px, so their checklists have space beside the desktop sidebar. Long task titles, categories, notes, and week names can wrap inside cards. See [the responsive review](RESPONSIVE_REVIEW.md) for the viewport matrix and validation limits.
+## Components and responsive layout
 
-The font request now contains only Plus Jakarta Sans. Both Tailwind's `font-sans` and display text use the same family with system fallbacks. The original request included extra families; the UI no longer depends on them. Georgia remains a local serif fallback for existing notebook text.
+- `WorkspaceHero` contains the H1, week selection, new-week action, a link to the task heading, and actual completion summary.
+- `TrackGrid` shows up to six real learning tracks. Progress derives from chapter steps or internship activities. Each card opens its corresponding track; the full selector remains available.
+- `WeeklyLogs` shows the three most recent weeks with focus, completion, and an action to open each week. It sorts a copy and summarizes only visible weeks.
+- `WorkspaceFooter` offers backup access, current storage status, and a back-to-top action that also moves keyboard focus to the main region.
 
-## Reusable components
+The header uses a subdued translucent background and emerald primary actions. Desktop navigation uses an inset selection line. The mobile drawer shares the navigation definitions and styles. Calendar, analytics, study panels, task forms, and recovery UI inherit the shared theme. History chart colors come from semantic tokens and update without replacing the chart instance.
 
-`src/components/ui/Primitives.tsx` provides `PageHeader`, `StatCard`, and a typed `SegmentedControl`. `src/components/ui/Dialog.tsx` wraps the native dialog element. Shared navigation definitions are in `src/components/navigation.ts`; `NavigationContent` renders both navigation surfaces. The weekly view contains a focused `TaskRow` and keeps the existing memoized selection and summary utilities.
+Cards have three columns from 1280px, two from 480px, and one below 480px. The hero stacks below 768px. Logs and footer controls wrap on small screens. Text containers allow wrapping; canvases are constrained to the available width. Buttons and touch controls retain 44px minimum targets.
 
-```tsx
-<PageHeader
-  eyebrow="Your study tracks"
-  title="Academic Tracks"
-  description="Follow each chapter from reading and deep study to revision."
-  actions={<button className="button button-primary" onClick={openTrackForm}>Add Track</button>}
-/>
+Use `surface` for panels; `button button-primary` and `button button-secondary` for actions; `icon-button` for labeled icon controls; and `field` with `field-label` for forms. Text classes include `page-title`, `section-title`, `eyebrow`, `text-muted`, `text-accent`, and `text-success`. Layout helpers include `wrap-controls`, `card-grid`, `compact-card-grid`, and `class-progress-grid`.
 
-<section className="surface p-6">
-  <h2 className="section-title">Study notes</h2>
-  <label className="field-label mt-4" htmlFor="study-notes">Notes</label>
-  <textarea id="study-notes" className="field" rows={3} />
-</section>
-```
+## Motion and accessibility
 
-```tsx
-<SegmentedControl
-  label="Task completion filter"
-  value={filter}
-  onChange={setFilter}
-  options={[
-    { value: 'all', label: 'All' },
-    { value: 'remaining', label: 'Remaining' },
-    { value: 'completed', label: 'Done' },
-  ]}
-/>
-```
+Pointer hover lifts cards by 4px and adds a soft shadow. Action arrows move slightly; primary buttons change fill and shadow. Keyboard focus has a visible outline. Native progress elements have accessible labels. Reduced motion removes card and arrow movement and suppresses transitions, screen entrances, smooth scrolling, chart animation, and confetti.
 
-## Interaction and accessibility
+Native dialogs, focus containment, Escape handling, focus restoration, skip navigation, labeled controls, status announcements, and storage recovery remain in place. Decorative icons are hidden from assistive technology. Headings use H1 for the page, H2 for sections, and H3 for cards.
 
-Hover states change background or text without moving the layout. Pressed buttons move by 1px. Progress bars animate their width; screen entrances use a short opacity/translation transition. CSS disables these transitions and animations when reduced motion is requested. Charts also disable animation for that preference, and the application skips confetti.
-
-The task form and navigation drawer use native modal dialogs, contain Tab/Shift+Tab focus, close on Escape, lock background scrolling, and restore focus to the opening control. Task form labels are associated with their fields. A skip link leads to the main region, selected navigation exposes `aria-current`, toggle groups expose `aria-pressed`, and notifications use a status region. These choices follow the [WAI modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) and the browser's [reduced-motion preference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion).
-
-This is not a claim of full WCAG conformance. Other legacy dialogs retain their existing implementation, and a complete screen-reader audit was not run. The standalone HTML export retains its separate template.
+The standalone downloadable HTML planner retains its separate export template. This theme does not change its rendering or security rules.
 
 ## Verification
 
-- Production build and TypeScript check passed.
-- All 10 existing utility and server tests passed.
-- An isolated headless Edge run checked weekly planning, calendar, academic tracks, and NCERT for page overflow at 320, 390, 768, 1024, and 1440px.
-- Browser checks covered task creation, initial dialog focus, Tab/Shift+Tab containment, Escape, focus restoration, body scroll restoration, drawer navigation, and reduced-motion styles.
-- Existing regression checks covered sorting, trimmed search, linked NCERT completion, lazy views, chart reuse, timer cleanup, oversized upload rejection, and aborting an in-flight scan. No page errors occurred.
-- Light, dark, desktop, mobile, analytics, history, study-view, task-form, and drawer screenshots were inspected. Screenshots use illustrative data in an isolated browser context.
+The delivered `theme-validation.json` records checks for this revision. Theme checks cover 18 page or dialog states in both modes with axe 4.10.3, and each state at 320, 390, 480, 768, 820, 1024, 1280, and 1440px. Modal audits inspect the active dialog because the background is inert. Interaction checks cover theme persistence, track navigation, task creation and completion, log navigation, drawer dismissal, hover, reduced motion, and long-content wrapping.
 
-No new runtime dependency was added. Optional views and dialogs remain lazy-loaded. Verification used Edge; Safari and Firefox were not tested.
+TypeScript, production and hosted builds, the existing 25 code/server tests, and five Worker tests are checked before publication. Security/recovery browser regressions are also rerun against the themed build. No runtime dependency was added; optional views and dialogs remain lazy-loaded.
+
+Verification uses Edge and automated accessibility rules. It does not establish full WCAG conformance or replace a manual screen-reader audit. Firefox and Safari were not tested.

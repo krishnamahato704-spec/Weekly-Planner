@@ -34,8 +34,8 @@ export function Navbar({ currentSection, onSelectDestination, pendingTasksCount 
       <NavigationContent {...navigation} />
       <div className="sidebar-note">
         <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300"><Plus aria-hidden="true" size={16} /></span>
-        <p className="mt-3 text-sm font-semibold">Make room for your next goal.</p>
-        <p className="mt-1 text-xs leading-relaxed text-muted">Start with one task. Your weekly plan grows with you.</p>
+        <p className="mt-3 text-sm font-semibold">Plan your next step.</p>
+        <p className="mt-1 text-xs leading-relaxed text-muted">Capture a task, then follow it through to completion.</p>
         <button type="button" className="button button-secondary mt-4 w-full" onClick={onOpenAddTask}>Add a task <ChevronRight aria-hidden="true" size={15} /></button>
       </div>
       <div className="sidebar-footer" aria-live="polite"><span className={`h-1.5 w-1.5 rounded-full ${storageIssues.length ? 'bg-amber-600' : 'bg-emerald-500'}`} /> {storageIssues.length ? 'Saving needs attention' : 'Saved on this device'}</div>

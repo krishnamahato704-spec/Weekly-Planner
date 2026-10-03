@@ -15,7 +15,7 @@ export const CompletionGauge: React.FC<CompletionGaugeProps> = ({
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (Math.min(100, Math.max(0, percentage)) / 100) * circumference;
 
-  const colorClass = percentage === 100 ? 'text-emerald-600 dark:text-emerald-300' : 'text-indigo-600 dark:text-indigo-300';
+  const colorClass = percentage === 100 ? 'text-success' : 'text-accent';
 
   return (
     <div className="relative inline-flex items-center justify-center shrink-0" style={{ width: size, height: size }} role="img" aria-label={`${percentage}% complete`}>

@@ -81,7 +81,10 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
     const labels = stats.summaries.map(({ week }) => week.title.replace('Week of Sunday, ', ''));
     const completionPercentages = stats.summaries.map((summary) => summary.percentage);
 
-    const textColor = isDarkMode ? '#a1afc5' : '#637087';
+    const tokens = getComputedStyle(document.documentElement);
+    const textColor = tokens.getPropertyValue('--muted').trim();
+    const accent = tokens.getPropertyValue('--accent').trim();
+    const success = tokens.getPropertyValue('--success').trim();
     const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)';
 
     chart.data = {
@@ -91,11 +94,11 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
             label: 'Completion Rate (%)',
             data: completionPercentages,
             backgroundColor: completionPercentages.map((pct) =>
-              pct === 100 ? (isDarkMode ? '#73d3b1' : '#15805e') : (isDarkMode ? '#a5b4fc' : '#4f46e5')
+              pct === 100 ? success : accent
             ),
-            borderColor: chartType === 'line' ? (isDarkMode ? '#a5b4fc' : '#4f46e5') : undefined,
+            borderColor: chartType === 'line' ? accent : undefined,
             borderWidth: chartType === 'line' ? 2.5 : 0,
-            fill: chartType === 'line' ? { target: 'origin', above: 'rgba(99, 102, 241, 0.12)' } : false,
+            fill: chartType === 'line' ? { target: 'origin', above: tokens.getPropertyValue('--chart-fill').trim() } : false,
             tension: 0.35,
             borderRadius: 6,
           },
@@ -122,7 +125,7 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
         scales: {
           x: {
             grid: { display: false },
-            ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 } },
+            ticks: { color: textColor, font: { family: 'DM Sans', size: 11 } },
           },
           y: {
             min: 0,
@@ -131,7 +134,7 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
             ticks: {
               color: textColor,
               callback: (value) => `${value}%`,
-              font: { family: 'Plus Jakarta Sans', size: 11 },
+              font: { family: 'DM Sans', size: 11 },
             },
           },
         },
@@ -188,7 +191,7 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
               Weekly Completion Trajectory
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Completion rate for each weekly plan. Green marks a finished week.
+              Completed tasks as a share of each week’s plan.
             </p>
           </div>
 
@@ -203,7 +206,7 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
 
       {/* Weekly Summary Cards Grid */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h2 className="font-display text-base font-bold text-slate-950 dark:text-white">
             Historical Week Archives ({totalWeeks} Weeks)
           </h2>

@@ -18,7 +18,7 @@ export function Brand() {
   return <span className="flex items-center gap-3">
     <span className="brand-mark"><CheckCheck size={22} strokeWidth={2.2} aria-hidden="true" /></span>
     <span className="text-left"><span className="block font-display font-bold text-[17px] tracking-tight">WeeklyPlan</span>
-      <span className="block text-[11px] font-medium text-muted">A little progress, every day</span></span>
+      <span className="block text-[11px] font-medium text-muted">Your weekly workspace</span></span>
   </span>;
 }
 export function NavigationContent({ currentSection, onSelectDestination, pendingTasksCount, ncertPercent,
