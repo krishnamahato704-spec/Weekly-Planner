@@ -67,8 +67,8 @@ test('AI route rejects empty and invalid input before invoking the provider', as
 
 test('AI route reports a missing key only when valid input requires the provider', async () => {
   const response = await parse({ additionalNotes: 'Read chapter one' });
-  assert.equal(response.status, 500);
-  assert.match((await response.json()).error, /GEMINI_API_KEY/);
+  assert.equal(response.status, 503);
+  assert.match((await response.json()).error, /unavailable/);
 });
 
 test('production assets can be cached while the application HTML revalidates', async () => {
@@ -81,4 +81,30 @@ test('production assets can be cached while the application HTML revalidates', a
   const html = await fetch(baseUrl);
   assert.equal(html.status, 200);
   assert(!html.headers.get('cache-control')?.includes('immutable'));
+});
+
+test('API rejects cross-origin and simple requests with safe JSON errors', async () => {
+  const endpoint = `${baseUrl}/api/ai/parse-handwritten-plan`;
+  const send = (headers: Record<string, string>, body = '{}') => fetch(endpoint, { method: 'POST', headers, body });
+  assert.equal((await send({ 'Content-Type': 'application/json', Origin: 'https://evil.test' })).status, 403);
+  assert.equal((await send({ 'Content-Type': 'application/json', 'Sec-Fetch-Site': 'same-site' })).status, 403);
+  assert.equal((await send({ 'Content-Type': 'text/plain' })).status, 415);
+  const malformed = await send({ 'Content-Type': 'application/json' }, '{');
+  assert.equal(malformed.status, 400);
+  assert.match(malformed.headers.get('content-type') ?? '', /application\/json/);
+  assert.deepEqual(await malformed.json(), { error: 'Planner data must be valid JSON.' });
+  assert.equal(malformed.headers.get('cache-control'), 'no-store');
+  assert.equal((await fetch(baseUrl + '/api/missing')).status, 404);
+  assert.equal((await fetch(endpoint)).status, 405);
+});
+
+test('production responses enforce CSP and hide framework diagnostics', async () => {
+  const response = await fetch(baseUrl);
+  assert.match(response.headers.get('content-security-policy') ?? '', /script-src 'self'/);
+  assert.match(response.headers.get('content-security-policy') ?? '', /object-src 'none'/);
+  assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
+  assert.equal(response.headers.get('x-powered-by'), null);
+  const html = await response.text();
+  assert(html.includes('<script src="/theme.js"></script>'));
 });

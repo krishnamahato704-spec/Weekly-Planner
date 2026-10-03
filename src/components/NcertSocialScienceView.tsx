@@ -102,6 +102,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
   activeWeekTitle,
   onAddWeeklyTask,
 }) => {
+  const fieldId = React.useId();
   // Navigation & Filtering State
   // Default to Class 6 (or remembered class) to prevent continuous scrolling down of all 212 chapters
   const [selectedClassNum, setSelectedClassNum] = useState<number | 'all'>(() => {
@@ -464,20 +465,18 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
       {/* ===================================================================== */}
       {/* 1. TOP DASHBOARD                                                      */}
       {/* ===================================================================== */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-xs relative overflow-hidden">
-        {/* Subtle decorative glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-indigo-500/10 via-teal-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="surface p-6 sm:p-8 relative overflow-hidden">
 
         <div className="relative z-10 space-y-6">
           {/* Header row */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-teal-400 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-500/25 shrink-0">
-                📚
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-500/25 shrink-0">
+                <BookOpen size={22} aria-hidden="true" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-display font-extrabold text-slate-950 dark:text-white tracking-tight">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="page-title">
                     NCERT Social Science
                   </h1>
                   <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200/70 dark:border-indigo-800/60">
@@ -497,24 +496,24 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl transition-colors border border-slate-200/80 dark:border-slate-700/80"
                 title="Backup, export, or import progress"
               >
-                <Settings className="w-3.5 h-3.5" />
+                <Settings aria-hidden="true" className="w-3.5 h-3.5" />
                 <span>Backup & Export</span>
               </button>
             </div>
           </div>
 
           {/* Metric cards grid: P1.6 Top 4 Primary Metrics */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="compact-card-grid">
             {/* 1. OVERALL NCERT PROGRESS */}
             <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-slate-50 to-teal-500/10 dark:from-indigo-950/40 dark:via-slate-800/40 dark:to-teal-950/40 border border-indigo-200/60 dark:border-indigo-800/50 flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
                   Overall Progress
                 </span>
-                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-indigo-500" />
               </div>
               <div className="my-2">
-                <div className="text-3xl sm:text-4xl font-display font-extrabold text-indigo-950 dark:text-white tabular-nums">
+                <div className="text-3xl sm:text-4xl font-display font-bold text-indigo-950 dark:text-white tabular-nums">
                   {overallPercent}%
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -523,7 +522,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
               </div>
               <div className="w-full h-2 rounded-full bg-slate-200/80 dark:bg-slate-700 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-indigo-600 to-teal-400 rounded-full transition-all duration-500"
+                  className="h-full bg-indigo-600 dark:bg-indigo-400 rounded-full transition-all duration-500"
                   style={{ width: `${overallPercent}%` }}
                 />
               </div>
@@ -535,7 +534,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                 Chapters
               </span>
               <div className="my-2">
-                <div className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 dark:text-white tabular-nums">
+                <div className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tabular-nums">
                   {completedChaptersCount} <span className="text-sm font-normal text-slate-400">/ {TOTAL_NCERT_CHAPTERS}</span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -556,7 +555,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                 Books
               </span>
               <div className="my-2">
-                <div className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 dark:text-white tabular-nums">
+                <div className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tabular-nums">
                   {completedBooksCount} <span className="text-sm font-normal text-slate-400">/ {TOTAL_NCERT_BOOKS}</span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -577,7 +576,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                 Activities
               </span>
               <div className="my-2">
-                <div className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 dark:text-white tabular-nums">
+                <div className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tabular-nums">
                   {totalCompletedActivities} <span className="text-sm font-normal text-slate-400">/ {TOTAL_NCERT_TASKS}</span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -611,7 +610,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                     <span>📖</span> Reading
                   </span>
                   <span className="text-slate-500 dark:text-slate-400 font-medium">
-                    {totalReadingCount} / {TOTAL_NCERT_CHAPTERS} · <strong className="text-indigo-600 dark:text-indigo-400">{readingPercent}%</strong>
+                    {totalReadingCount} / {TOTAL_NCERT_CHAPTERS} · <strong className="text-indigo-600 dark:text-indigo-300">{readingPercent}%</strong>
                   </span>
                 </div>
                 <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
@@ -661,7 +660,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                 Click any class to view
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+            <div className="class-progress-grid">
               {NCERT_CLASSES_DATA.map((cls) => {
                 const stat = classStats[cls.classNum];
                 const isSelected = selectedClassNum === cls.classNum;
@@ -678,7 +677,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                   >
                     <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
                       <span>{cls.className}</span>
-                      <span className="text-indigo-600 dark:text-indigo-400">{stat.percent}%</span>
+                      <span className="text-indigo-600 dark:text-indigo-300">{stat.percent}%</span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden mt-1">
                       <div
@@ -702,11 +701,11 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
       {/* ===================================================================== */}
       {/* 2. CLASS-WISE SUB-SECTIONS SWITCHER                                   */}
       {/* ===================================================================== */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+      <div className="surface p-4 sm:p-5 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md">
                 Class Sub-Sections
               </span>
               <span className="text-xs text-slate-400">·</span>
@@ -732,7 +731,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                 className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
                 title={prevClassNum ? `Switch to Class ${prevClassNum}` : 'No previous class'}
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <ChevronLeft aria-hidden="true" className="w-3.5 h-3.5" />
                 <span>Class {prevClassNum || ''}</span>
               </button>
               <button
@@ -742,14 +741,20 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                 title={nextClassNum ? `Switch to Class ${nextClassNum}` : 'No next class'}
               >
                 <span>Class {nextClassNum || ''}</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight aria-hidden="true" className="w-3.5 h-3.5" />
               </button>
             </div>
           )}
         </div>
 
-        {/* Horizontal Sub-Section Tabs (Identical to other academic tracks) */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="md:hidden">
+          <label className="field-label" htmlFor="ncert-class-selector">Class</label>
+          <select id="ncert-class-selector" className="field" value={selectedClassNum} onChange={event => handleSelectClass(event.target.value === 'all' ? 'all' : Number(event.target.value))}>
+            {NCERT_CLASSES_DATA.map(cls => <option key={cls.classNum} value={cls.classNum}>{cls.className}</option>)}
+            <option value="all">All Classes Directory</option>
+          </select>
+        </div>
+        <div className="hidden md:flex items-center gap-2 flex-wrap pb-1">
           {NCERT_CLASSES_DATA.map((cls) => {
             const stat = classStats[cls.classNum];
             const isSelected = selectedClassNum === cls.classNum;
@@ -757,7 +762,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
               <button
                 key={cls.classNum}
                 onClick={() => handleSelectClass(cls.classNum)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 border ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2  shrink-0 border ${
                   isSelected
                     ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-500/25 ring-2 ring-indigo-500/30 font-bold'
                     : 'bg-slate-100/90 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border-slate-200/60 dark:border-slate-700/60'
@@ -774,7 +779,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                   {stat.completedChapters}/{stat.totalChapters} Ch
                 </span>
                 {stat.percent === 100 && (
-                  <CheckCircle2
+                  <CheckCircle2 aria-hidden="true"
                     className={`w-3.5 h-3.5 ${isSelected ? 'text-emerald-200' : 'text-emerald-500'}`}
                   />
                 )}
@@ -785,13 +790,13 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
           {/* All Classes Overview Tab */}
           <button
             onClick={() => handleSelectClass('all')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 border ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5  shrink-0 border ${
               selectedClassNum === 'all'
                 ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-500/25 ring-2 ring-indigo-500/30 font-bold'
                 : 'bg-slate-100/90 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border-slate-200/60 dark:border-slate-700/60'
             }`}
           >
-            <Layers className="w-3.5 h-3.5" />
+            <Layers aria-hidden="true" className="w-3.5 h-3.5" />
             <span>All Classes Directory</span>
             <span
               className={`text-[10px] px-1.5 py-0.5 rounded-md ${
@@ -809,18 +814,12 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
       {/* ===================================================================== */}
       {/* 3. FILTERS & SEARCH TOOLBAR                                           */}
       {/* ===================================================================== */}
-      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="surface p-4 sm:p-5 space-y-4">
+        <div className="chapter-row">
           {/* Search bar */}
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search chapters, books, subjects, or classes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-            />
+            <Search aria-hidden="true" className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <><label className="sr-only" htmlFor={`${fieldId}-field-1`}>Search chapters, books, subjects, or classes</label><input id={`${fieldId}-field-1`} type="text" placeholder="Search chapters, books, subjects, or classes..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" maxLength={500}/></>
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
@@ -849,9 +848,9 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        <div className="flex items-center gap-2 flex-wrap pb-1 text-xs">
           <span className="text-slate-400 font-semibold shrink-0 flex items-center gap-1 mr-1">
-            <Filter className="w-3.5 h-3.5" /> Filter:
+            <Filter aria-hidden="true" className="w-3.5 h-3.5" /> Filter:
           </span>
 
           {[
@@ -868,7 +867,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
               <button
                 key={flt.id}
                 onClick={() => setFilterStatus(flt.id as FilterStatus)}
-                className={`px-3 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                className={`px-3 py-1 rounded-lg font-semibold transition-all  ${
                   isSelected
                     ? 'bg-indigo-600 text-white shadow-xs'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -891,7 +890,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50">
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-slate-950 dark:text-white flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  <Layers aria-hidden="true" className="w-5 h-5 text-indigo-600 dark:text-indigo-300" />
                   <span>NCERT Social Science Classes 6–12 Directory</span>
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
@@ -900,14 +899,14 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
               </div>
               <button
                 onClick={() => setDirectoryViewMode('flat')}
-                className="px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors whitespace-nowrap self-start sm:self-auto shadow-2xs"
+                className="px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors  self-start sm:self-auto shadow-2xs"
               >
                 View Full Continuous Scroll
               </button>
             </div>
 
             {/* Class Directory Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            <div className="card-grid sm:gap-5">
               {NCERT_CLASSES_DATA.map((cls) => {
                 const stat = classStats[cls.classNum];
                 const classSubjects = Array.from(new Set(cls.books.map((b) => b.subject)));
@@ -919,15 +918,15 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                   >
                     <div className="space-y-3.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-display font-extrabold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <span className="text-lg font-display font-bold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
                           {cls.className}
                         </span>
                         {stat.percent === 100 ? (
                           <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-emerald-300/80 dark:border-emerald-800">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> 100% Done
+                            <CheckCircle2 aria-hidden="true" className="w-3.5 h-3.5" /> 100% Done
                           </span>
                         ) : (
-                          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full">
+                          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full">
                             {stat.percent}% Verified
                           </span>
                         )}
@@ -948,7 +947,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                             className={`h-full rounded-full transition-all duration-300 ${
                               stat.percent === 100
                                 ? 'bg-emerald-500'
-                                : 'bg-gradient-to-r from-indigo-600 to-teal-400'
+                                : 'bg-indigo-600 dark:bg-indigo-400'
                             }`}
                             style={{ width: `${stat.percent}%` }}
                           />
@@ -975,7 +974,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                         className="w-full py-2.5 px-4 text-xs font-bold rounded-xl text-indigo-600 dark:text-indigo-300 bg-indigo-50 hover:bg-indigo-600 hover:text-white dark:bg-indigo-950/50 dark:hover:bg-indigo-600 dark:hover:text-white transition-all flex items-center justify-center gap-1.5 shadow-2xs group-hover:bg-indigo-600 group-hover:text-white"
                       >
                         <span>Open {cls.className} Sub-Section</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                        <ArrowRight aria-hidden="true" className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </button>
                     </div>
                   </div>
@@ -984,8 +983,8 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
             </div>
           </div>
         ) : filteredClasses.length === 0 ? (
-          <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-8">
-            <BookOpen className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+          <div className="surface text-center py-16 p-8">
+            <BookOpen aria-hidden="true" className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
               No matching NCERT chapters found
             </h3>
@@ -1010,7 +1009,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
             {selectedClassNum === 'all' && (
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-800/60 text-xs">
                 <div className="flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <Layers aria-hidden="true" className="w-4 h-4 text-indigo-600 dark:text-indigo-300" />
                   <span className="font-bold text-slate-800 dark:text-slate-200">
                     {searchQuery ? `Search results across all classes` : `Continuous view of all classes`}
                   </span>
@@ -1020,9 +1019,9 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                     setSearchQuery('');
                     setDirectoryViewMode('cards');
                   }}
-                  className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1 self-start sm:self-auto"
+                  className="text-indigo-600 dark:text-indigo-300 font-semibold hover:underline flex items-center gap-1 self-start sm:self-auto"
                 >
-                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <ArrowLeft aria-hidden="true" className="w-3.5 h-3.5" />
                   <span>Switch back to Class Directory Cards</span>
                 </button>
               </div>
@@ -1038,7 +1037,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                   {/* Class Sub-Section Hero Header */}
                   {isSingleClassView ? (
                     <div className="bg-gradient-to-r from-indigo-50/70 via-slate-50 to-teal-50/50 dark:from-indigo-950/30 dark:via-slate-900/60 dark:to-teal-950/30 rounded-3xl p-5 sm:p-6 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs space-y-4">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800/70">
@@ -1049,7 +1048,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                               {cls.structureDesc}
                             </span>
                           </div>
-                          <h2 className="text-xl sm:text-2xl font-display font-extrabold text-slate-950 dark:text-white mt-1">
+                          <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-950 dark:text-white mt-1">
                             {cls.className} Social Science Curriculum
                           </h2>
                         </div>
@@ -1060,7 +1059,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                             <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
                               {classStat.completedChapters} / {classStat.totalChapters} Chapters Verified
                             </div>
-                            <div className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+                            <div className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-300">
                               {classStat.percent}% Class Mastery · {classStat.completedBooks}/{classStat.totalBooks} Books
                             </div>
                           </div>
@@ -1069,7 +1068,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                               className={`h-full rounded-full transition-all duration-300 ${
                                 classStat.percent === 100
                                   ? 'bg-emerald-500'
-                                  : 'bg-gradient-to-r from-indigo-600 to-teal-400'
+                                  : 'bg-indigo-600 dark:bg-indigo-400'
                               }`}
                               style={{ width: `${classStat.percent}%` }}
                             />
@@ -1079,13 +1078,13 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
 
                       {/* Subject Filter Sub-Tabs for this Class */}
                       <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+                        <div className="flex items-center gap-1.5 flex-wrap pb-1  text-xs">
                           <span className="text-slate-400 font-semibold text-[11px] shrink-0 mr-1 flex items-center gap-1">
-                            <BookOpen className="w-3.5 h-3.5 text-indigo-500" /> Focus Subject:
+                            <BookOpen aria-hidden="true" className="w-3.5 h-3.5 text-indigo-500" /> Focus Subject:
                           </span>
-                          <button
+                          <button aria-pressed={selectedSubject === 'all'}
                             onClick={() => setSelectedSubject('all')}
-                            className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap border ${
+                            className={`px-3 py-1.5 rounded-xl font-semibold transition-all  border ${
                               selectedSubject === 'all'
                                 ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
                                 : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border-slate-200/80 dark:border-slate-700/80'
@@ -1105,7 +1104,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                               <button
                                 key={subj}
                                 onClick={() => setSelectedSubject(subj)}
-                                className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 border ${
+                                className={`px-3 py-1.5 rounded-xl font-semibold transition-all  flex items-center gap-1.5 border ${
                                   isSubjSelected
                                     ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
                                     : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border-slate-200/80 dark:border-slate-700/80'
@@ -1131,7 +1130,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                             disabled={!prevClassNum}
                             className="px-2.5 py-1.5 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white bg-white dark:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-1 font-semibold border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
                           >
-                            <ChevronLeft className="w-3.5 h-3.5" />
+                            <ChevronLeft aria-hidden="true" className="w-3.5 h-3.5" />
                             <span>Class {prevClassNum || ''}</span>
                           </button>
                           <span className="text-slate-300 dark:text-slate-700">·</span>
@@ -1141,7 +1140,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                             className="px-2.5 py-1.5 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white bg-white dark:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-1 font-semibold border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
                           >
                             <span>Class {nextClassNum || ''}</span>
-                            <ChevronRight className="w-3.5 h-3.5" />
+                            <ChevronRight aria-hidden="true" className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
@@ -1150,7 +1149,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                     /* Continuous / Multi-class Section Header */
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200 dark:border-slate-800">
                       <div className="flex items-center gap-3">
-                        <span className="text-lg sm:text-xl font-display font-extrabold text-slate-950 dark:text-white">
+                        <span className="text-lg sm:text-xl font-display font-bold text-slate-950 dark:text-white">
                           {cls.className}
                         </span>
                         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -1167,16 +1166,16 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                           Chapters: <strong className="text-slate-800 dark:text-slate-200">{classStat.completedChapters}/{classStat.totalChapters}</strong>
                         </span>
                         <span className="text-slate-300 dark:text-slate-700">•</span>
-                        <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                        <span className="font-bold text-indigo-600 dark:text-indigo-300">
                           {classStat.percent}%
                         </span>
                         <span className="text-slate-300 dark:text-slate-700">•</span>
                         <button
                           onClick={() => handleSelectClass(cls.classNum)}
-                          className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                          className="font-bold text-indigo-600 dark:text-indigo-300 hover:underline flex items-center gap-1"
                         >
                           <span>Open Sub-Section</span>
-                          <ArrowRight className="w-3 h-3" />
+                          <ArrowRight aria-hidden="true" className="w-3 h-3" />
                         </button>
                       </div>
                     </div>
@@ -1228,20 +1227,18 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                       >
                         {/* BOOK ACCORDION HEADER */}
                         <div
-                          onClick={() => toggleBook(book.id)}
-                          className="p-4 sm:p-5 cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
+                          className="p-4 sm:p-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4"
                         >
                           <div className="flex items-start gap-3.5 min-w-0">
-                            <button
-                              type="button"
+                            <span aria-hidden="true"
                               className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition-transform shrink-0 mt-0.5"
                             >
                               {isExpanded ? (
-                                <ChevronDown className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                <ChevronDown aria-hidden="true" className="w-5 h-5 text-indigo-600 dark:text-indigo-300" />
                               ) : (
-                                <ChevronRight className="w-5 h-5" />
+                                <ChevronRight aria-hidden="true" className="w-5 h-5" />
                               )}
-                            </button>
+                            </span>
 
                             <div className="space-y-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -1255,14 +1252,18 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                                 )}
                                 {isBComplete && (
                                   <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded-md flex items-center gap-1 border border-emerald-300 dark:border-emerald-800">
-                                    <CheckCircle2 className="w-3 h-3" />
+                                    <CheckCircle2 aria-hidden="true" className="w-3 h-3" />
                                     Book Complete
                                   </span>
                                 )}
                               </div>
 
                               <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                                {book.title}
+                                <button type="button" className="text-left rounded-lg hover:text-indigo-600 dark:hover:text-indigo-300"
+                                  aria-expanded={isExpanded} aria-controls={isExpanded ? `${book.id}-chapters` : undefined}
+                                  onClick={() => toggleBook(book.id)}>
+                                  <span className="sr-only">{isExpanded ? 'Collapse ' : 'Expand '}</span>{book.title}
+                                </button>
                               </h3>
 
                               {book.description && (
@@ -1279,7 +1280,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                               <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                                 {bookCompletedChapters} / {book.chapters.length} Chapters Complete
                               </div>
-                              <div className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+                              <div className="text-[11px] font-bold text-indigo-600 dark:text-indigo-300">
                                 {bookPercent}% Overall
                               </div>
                             </div>
@@ -1288,7 +1289,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                             <div className="w-24 sm:w-32 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                               <div
                                 className={`h-full rounded-full transition-all ${
-                                  isBComplete ? 'bg-emerald-500' : 'bg-gradient-to-r from-indigo-600 to-teal-400'
+                                  isBComplete ? 'bg-emerald-500' : 'bg-indigo-600 dark:bg-indigo-400'
                                 }`}
                                 style={{ width: `${bookPercent}%` }}
                               />
@@ -1298,7 +1299,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
 
                         {/* CHAPTER ROWS (Visible when expanded) */}
                         {isExpanded && (
-                          <div className="border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 p-2 sm:p-4 space-y-2">
+                          <div id={`${book.id}-chapters`} className="border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 p-2 sm:p-4 space-y-2">
                             {book.filteredChapters.map((ch) => {
                               const p = progressStore[ch.id];
                               const isChComp = isChapterComplete(p);
@@ -1316,7 +1317,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                               return (
                                 <div
                                   key={ch.id}
-                                  className={`p-3 sm:p-3.5 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+                                  className={`p-3 sm:p-3.5 rounded-xl border transition-all chapter-row ${
                                     isChComp
                                       ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200/90 dark:border-emerald-800/60 shadow-2xs'
                                       : 'bg-white dark:bg-slate-800/80 border-slate-200/70 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600'
@@ -1325,7 +1326,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                                   {/* Left: Chapter Number & Title */}
                                   <div className="space-y-0.5 min-w-0 flex-1">
                                     <div className="flex items-center gap-2">
-                                      <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md shrink-0">
+                                      <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md shrink-0">
                                         Ch {ch.chapterNumber}
                                       </span>
                                       {ch.theme && (
@@ -1335,7 +1336,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                                       )}
                                       {isChComp && (
                                         <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                          <CheckCircle2 className="w-3.5 h-3.5" />
+                                          <CheckCircle2 aria-hidden="true" className="w-3.5 h-3.5" />
                                           Done
                                         </span>
                                       )}
@@ -1346,10 +1347,10 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                                   </div>
 
                                   {/* Middle: 3 INDEPENDENT CHECKBOX CONTROLS */}
-                                  <div className="flex items-center gap-3 sm:gap-4 shrink-0 bg-slate-50 dark:bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                                  <div className="chapter-controls bg-slate-50 dark:bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                                     {/* 1. Reading */}
                                     <label className="flex items-center gap-1.5 cursor-pointer select-none group">
-                                      <input
+                                      <input aria-label={`Reading: ${ch.title}`}
                                         type="checkbox"
                                         checked={!!p?.reading}
                                         onChange={() => onToggleActivity(ch.id, 'reading')}
@@ -1370,7 +1371,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
 
                                     {/* 2. Notes */}
                                     <label className="flex items-center gap-1.5 cursor-pointer select-none group">
-                                      <input
+                                      <input aria-label={`Notes: ${ch.title}`}
                                         type="checkbox"
                                         checked={!!p?.notes}
                                         onChange={() => onToggleActivity(ch.id, 'notes')}
@@ -1391,7 +1392,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
 
                                     {/* 3. Revision */}
                                     <label className="flex items-center gap-1.5 cursor-pointer select-none group">
-                                      <input
+                                      <input aria-label={`Revision: ${ch.title}`}
                                         type="checkbox"
                                         checked={!!p?.revision}
                                         onChange={() => onToggleActivity(ch.id, 'revision')}
@@ -1426,10 +1427,10 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => handleOpenAddModal(flatCh)}
-                                      className="px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-white hover:bg-indigo-600 dark:hover:bg-indigo-600 rounded-lg border border-indigo-200 dark:border-indigo-800/80 transition-colors flex items-center gap-1 shadow-2xs whitespace-nowrap"
+                                      className="px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-300 hover:text-white hover:bg-indigo-600 dark:hover:bg-indigo-600 rounded-lg border border-indigo-200 dark:border-indigo-800/80 transition-colors flex items-center gap-1 shadow-2xs "
                                       title="Schedule reading, notes, or revision into current weekly plan"
                                     >
-                                      <Plus className="w-3.5 h-3.5" />
+                                      <Plus aria-hidden="true" className="w-3.5 h-3.5" />
                                       <span>Add to Weekly Plan</span>
                                     </button>
                                   </div>
@@ -1454,10 +1455,10 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
       {/* ===================================================================== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-200/80 dark:border-slate-800">
         {/* Progress by Class */}
-        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+        <div className="surface p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-indigo-500" />
+              <TrendingUp aria-hidden="true" className="w-4 h-4 text-indigo-500" />
               <span>Progress by Class</span>
             </h3>
             <span className="text-xs text-slate-400 font-semibold">
@@ -1476,7 +1477,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                     </span>
                     <span className="text-slate-500 dark:text-slate-400 font-medium">
                       {stat.completedChapters} / {stat.totalChapters} Ch ·{' '}
-                      <strong className="text-indigo-600 dark:text-indigo-400">{stat.percent}%</strong>
+                      <strong className="text-indigo-600 dark:text-indigo-300">{stat.percent}%</strong>
                     </span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
@@ -1484,7 +1485,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                       className={`h-full rounded-full transition-all duration-300 ${
                         stat.percent === 100
                           ? 'bg-emerald-500'
-                          : 'bg-gradient-to-r from-indigo-600 to-teal-400'
+                          : 'bg-indigo-600 dark:bg-indigo-400'
                       }`}
                       style={{ width: `${stat.percent}%` }}
                     />
@@ -1496,10 +1497,10 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
         </div>
 
         {/* Progress by Activity */}
-        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+        <div className="surface p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-              <Award className="w-4 h-4 text-teal-500" />
+              <Award aria-hidden="true" className="w-4 h-4 text-teal-500" />
               <span>Progress by Activity</span>
             </h3>
             <span className="text-xs text-slate-400 font-semibold">

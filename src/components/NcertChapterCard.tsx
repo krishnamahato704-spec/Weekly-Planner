@@ -155,7 +155,7 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
           {isDone ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 rounded-lg">
-              <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
+              <CheckCircle2 aria-hidden="true" className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Complete</span>
             </span>
           ) : (
@@ -198,7 +198,7 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
                 : 'border-slate-300 dark:border-slate-600 text-transparent'
             }`}
           >
-            <Check className="w-3.5 h-3.5 stroke-[3]" />
+            <Check aria-hidden="true" className="w-3.5 h-3.5 stroke-[3]" />
           </span>
         </button>
 
@@ -210,7 +210,7 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
             isNotesDone
               ? 'bg-amber-50/80 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 font-semibold'
               : isNotesLocked
-              ? 'bg-slate-100/50 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 opacity-80 cursor-pointer'
+              ? 'bg-slate-100/50 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/60 text-slate-400 dark:text-slate-400 opacity-80 cursor-pointer'
               : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-amber-300'
           }`}
           title={isNotesLocked ? 'Click to override: Complete Reading first' : undefined}
@@ -237,9 +237,9 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
             }`}
           >
             {isNotesDone ? (
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <Check aria-hidden="true" className="w-3.5 h-3.5 stroke-[3]" />
             ) : isNotesLocked ? (
-              <Lock className="w-3 h-3 text-slate-400" />
+              <Lock aria-hidden="true" className="w-3 h-3 text-slate-400" />
             ) : null}
           </span>
         </button>
@@ -252,7 +252,7 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
             isRevisionDone
               ? 'bg-teal-50/80 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800/60 text-teal-900 dark:text-teal-200 font-semibold'
               : isRevisionLocked
-              ? 'bg-slate-100/50 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 opacity-80 cursor-pointer'
+              ? 'bg-slate-100/50 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/60 text-slate-400 dark:text-slate-400 opacity-80 cursor-pointer'
               : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-teal-300'
           }`}
           title={isRevisionLocked ? 'Click to override: Complete Reading and Notes first' : undefined}
@@ -285,9 +285,9 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
             }`}
           >
             {isRevisionDone ? (
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <Check aria-hidden="true" className="w-3.5 h-3.5 stroke-[3]" />
             ) : isRevisionLocked ? (
-              <Lock className="w-3 h-3 text-slate-400" />
+              <Lock aria-hidden="true" className="w-3 h-3 text-slate-400" />
             ) : null}
           </span>
         </button>
@@ -320,7 +320,7 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
               className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/80 dark:border-indigo-800/60 rounded-md transition-colors"
               title="Open linked chapter notes and study resources"
             >
-              <Link2 className="w-3 h-3" />
+              <Link2 aria-hidden="true" className="w-3 h-3" />
               <span>🔗 Notes linked</span>
             </button>
           ) : hasText ? (
@@ -330,7 +330,7 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
               className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200/80 dark:border-amber-800/60 rounded-md transition-colors"
               title="View saved notes"
             >
-              <FileText className="w-3 h-3" />
+              <FileText aria-hidden="true" className="w-3 h-3" />
               <span>📝 Notes saved</span>
             </button>
           ) : (
@@ -340,7 +340,7 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
               className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
               title="Add chapter notes or external link"
             >
-              <FileText className="w-3 h-3 opacity-60" />
+              <FileText aria-hidden="true" className="w-3 h-3 opacity-60" />
               <span>Notes</span>
             </button>
           )}
@@ -353,7 +353,7 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
               className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 border border-teal-200/80 dark:border-teal-800/60 rounded-md transition-colors"
               title="View past revision history entries"
             >
-              <RotateCcw className="w-3 h-3" />
+              <RotateCcw aria-hidden="true" className="w-3 h-3" />
               <span>{revCount} {revCount === 1 ? 'rev' : 'revs'}</span>
             </button>
           )}
@@ -368,10 +368,10 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
         <button
           type="button"
           onClick={() => onOpenPlanModal(chapter, primaryActionActivity)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/50 border border-indigo-200/80 dark:border-indigo-800/70 rounded-xl transition-colors min-h-[40px]"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/50 border border-indigo-200/80 dark:border-indigo-800/70 rounded-xl transition-colors min-h-[44px]"
           title="Schedule reading, notes, or revision into Weekly Plan"
         >
-          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+          <Plus aria-hidden="true" className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Plan in Weekly</span>
         </button>
 
@@ -379,14 +379,14 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
         <button
           type="button"
           onClick={handlePrimaryAction}
-          className={`inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-xl transition-all shadow-xs min-h-[40px] ${
+          className={`inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-xl transition-all shadow-xs min-h-[44px] ${
             isDone
               ? 'text-teal-700 dark:text-teal-200 bg-teal-50 hover:bg-teal-600 hover:text-white dark:bg-teal-950/60 dark:hover:bg-teal-600 border border-teal-200 dark:border-teal-800'
               : 'text-white bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20'
           }`}
         >
           <span>{primaryActionLabel}</span>
-          <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
+          <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 stroke-[2.5]" />
         </button>
       </div>
     </div>

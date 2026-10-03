@@ -27,6 +27,7 @@ interface DashboardReportViewProps {
   weeks: WeekPlan[];
   onSelectTab: (tabId: string) => void;
   ncertPercent?: number;
+  headingLevel?: 1 | 2;
 }
 
 export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
@@ -34,7 +35,9 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
   weeks,
   onSelectTab,
   ncertPercent = 0,
+  headingLevel = 1,
 }) => {
+  const Heading = headingLevel === 1 ? 'h1' : 'h2';
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
   // Aggregates across all programs
@@ -80,19 +83,19 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
-            <Award className="w-3.5 h-3.5 text-amber-500" />
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+            <Award aria-hidden="true" className="w-3.5 h-3.5 text-amber-500" />
             <span className="font-semibold text-slate-700 dark:text-slate-300">
               Academic Audit & Portfolio Record
             </span>
             <span aria-hidden="true">·</span>
             <span>Real-time Syllabus Status</span>
           </div>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-950 dark:text-white" style={{ textWrap: 'balance' }}>
+          <Heading className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-950 dark:text-white" style={{ textWrap: 'balance' }}>
             Academic Performance Audit & Report
-          </h1>
+          </Heading>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
             Unified milestone verification across B.Ed 3rd Sem, M.A. History, CTET, UGC NET, and Canva.
           </p>
@@ -103,34 +106,34 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             onClick={handlePrint}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/70 hover:bg-indigo-100/80 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 shadow-2xs transition-colors"
           >
-            <Printer className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <Printer aria-hidden="true" className="w-4 h-4 text-indigo-600 dark:text-indigo-300" />
             <span>Print Audit Sheet</span>
           </button>
         </div>
       </div>
 
       {/* 4 Global Metric Modules with Sophisticated Color Distribution */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="compact-card-grid">
         {/* Module 1: Total Finished Tasks */}
-        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 shadow-2xs flex flex-col justify-between">
+        <div className="surface p-5 flex flex-col justify-between">
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             Total Milestones Finished
           </span>
           <div className="my-2.5">
-            <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums font-mono">
+            <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums font-mono">
               {totalMilestonesFinished}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {finishedChapters.length} Chapters + {completedSiTasks.length} SI Deliverables
             </p>
           </div>
-          <span className="text-[11px] text-slate-400 dark:text-slate-500">
+          <span className="text-[11px] text-slate-400 dark:text-slate-400">
             Recorded across 4 active study programs
           </span>
         </div>
 
         {/* Module 2: Stage 1 Reading Notes */}
-        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 shadow-2xs flex flex-col justify-between">
+        <div className="surface p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wider">
               Stage 1: Reading Notes
@@ -140,7 +143,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             </span>
           </div>
           <div className="my-2.5">
-            <div className="text-3xl font-extrabold text-slate-950 dark:text-white tabular-nums font-mono">
+            <div className="text-3xl font-bold text-slate-950 dark:text-white tabular-nums font-mono">
               {readingNotesCount}{' '}
               <span className="text-lg font-normal text-slate-400">/ {totalChapters}</span>
             </div>
@@ -157,9 +160,9 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
         </div>
 
         {/* Module 3: Stage 2 Deep Study */}
-        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 shadow-2xs flex flex-col justify-between">
+        <div className="surface p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-300 uppercase tracking-wider">
               Stage 2: Deep Study
             </span>
             <span className="text-xs font-mono tabular-nums text-slate-400">
@@ -167,7 +170,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             </span>
           </div>
           <div className="my-2.5">
-            <div className="text-3xl font-extrabold text-slate-950 dark:text-white tabular-nums font-mono">
+            <div className="text-3xl font-bold text-slate-950 dark:text-white tabular-nums font-mono">
               {deepStudyCount}{' '}
               <span className="text-lg font-normal text-slate-400">/ {totalChapters}</span>
             </div>
@@ -184,7 +187,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
         </div>
 
         {/* Module 4: Stage 3 Revision */}
-        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 shadow-2xs flex flex-col justify-between">
+        <div className="surface p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wider">
               Stage 3: Revision
@@ -194,7 +197,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             </span>
           </div>
           <div className="my-2.5">
-            <div className="text-3xl font-extrabold text-slate-950 dark:text-white tabular-nums font-mono">
+            <div className="text-3xl font-bold text-slate-950 dark:text-white tabular-nums font-mono">
               {revisionCount}{' '}
               <span className="text-lg font-normal text-slate-400">/ {totalChapters}</span>
             </div>
@@ -220,7 +223,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
           <span className="text-xs text-slate-400 font-medium">Click any card to open track</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div className="compact-card-grid">
           {programs.map((prog) => {
             const chaps = (prog.subjects || []).flatMap((s) => s.chapters);
             const finished = chaps.filter((c) => c.isFinished).length;
@@ -237,12 +240,12 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
                     <span className="font-semibold text-slate-700 dark:text-slate-300">
                       {prog.badge || prog.type.toUpperCase()}
                     </span>
-                    <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold group-hover:underline flex items-center gap-1">
+                    <span className="text-xs text-indigo-600 dark:text-indigo-300 font-semibold group-hover:underline flex items-center gap-1">
                       <span>View</span>
-                      <ArrowRight className="w-3 h-3" />
+                      <ArrowRight aria-hidden="true" className="w-3 h-3" />
                     </span>
                   </div>
-                  <h3 className="font-display text-base font-bold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <h3 className="font-display text-base font-bold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
                     {prog.title}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
@@ -293,12 +296,12 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
                 <span className="font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md text-[10px]">
                   CLASSES 6–12
                 </span>
-                <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold group-hover:underline flex items-center gap-1">
+                <span className="text-xs text-indigo-600 dark:text-indigo-300 font-semibold group-hover:underline flex items-center gap-1">
                   <span>View</span>
-                  <ArrowRight className="w-3 h-3" />
+                  <ArrowRight aria-hidden="true" className="w-3 h-3" />
                 </span>
               </div>
-              <h3 className="font-display text-base font-bold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+              <h3 className="font-display text-base font-bold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
                 NCERT Social Science
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
@@ -310,13 +313,13 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
               <div>
                 <div className="flex justify-between font-medium text-slate-700 dark:text-slate-300 mb-1">
                   <span>Overall Mastery</span>
-                  <span className="font-mono tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
+                  <span className="font-mono tabular-nums font-bold text-indigo-600 dark:text-indigo-300">
                     {ncertPercent}%
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-indigo-600 to-teal-400 h-full rounded-full transition-all duration-500"
+                    className="bg-indigo-600 dark:bg-indigo-400 h-full rounded-full transition-all duration-500"
                     style={{ width: `${ncertPercent}%` }}
                   />
                 </div>
@@ -331,7 +334,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="font-display text-base font-bold text-slate-950 dark:text-white flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600" />
               <span>Completed Milestone Ledger</span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -340,24 +343,24 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
           </div>
 
           {/* Filter Bar with clean segmented styling */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-900/90 rounded-xl border border-slate-200/60 dark:border-slate-800/60 overflow-x-auto text-xs">
-            <button
+          <div className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-900/90 rounded-xl border border-slate-200/60 dark:border-slate-800/60 flex-wrap text-xs">
+            <button aria-pressed={selectedFilter === 'all'}
               onClick={() => setSelectedFilter('all')}
-              className={`px-3 py-1 rounded-lg transition-colors whitespace-nowrap font-medium ${
+              className={`px-3 py-1 rounded-lg transition-colors  font-medium ${
                 selectedFilter === 'all'
-                  ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs font-semibold'
+                  ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 shadow-2xs font-semibold'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
               }`}
             >
               All Programs
             </button>
             {programs.map((p) => (
-              <button
+              <button aria-pressed={selectedFilter === p.id}
                 key={p.id}
                 onClick={() => setSelectedFilter(p.id)}
-                className={`px-3 py-1 rounded-lg transition-colors whitespace-nowrap font-medium ${
+                className={`px-3 py-1 rounded-lg transition-colors  font-medium ${
                   selectedFilter === p.id
-                    ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs font-semibold'
+                    ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 shadow-2xs font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
                 }`}
               >
@@ -366,7 +369,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             ))}
             <button
               onClick={() => onSelectTab('ncert-track')}
-              className="px-3 py-1 rounded-lg transition-colors whitespace-nowrap font-medium text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1"
+              className="px-3 py-1 rounded-lg transition-colors  font-medium text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 flex items-center gap-1"
             >
               <span>📚</span>
               <span>NCERT ({ncertPercent}%)</span>
@@ -380,12 +383,12 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             <h3 className="text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
               B.Ed School Internship Completed Deliverables ({completedSiTasks.length})
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="compact-card-grid">
               {completedSiTasks.map((t) => (
                 <div key={t.id} className="p-3.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs">
                   <div>
                     <span className="font-semibold text-slate-900 dark:text-white block">{t.title}</span>
-                    <span className="text-slate-500 text-[11px] tabular-nums font-mono">{t.currentCount} / {t.targetCount} units achieved</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-[11px] tabular-nums font-mono">{t.currentCount} / {t.targetCount} units achieved</span>
                   </div>
                   <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     Done ✓
@@ -397,10 +400,10 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
         )}
 
         {/* Finished Chapters Table */}
-        <div className="divide-y divide-slate-200 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 overflow-hidden shadow-2xs">
+        <div className="surface divide-y divide-slate-200 dark:divide-slate-800 overflow-hidden">
           {filteredFinishedChapters.length === 0 && completedSiTasks.length === 0 ? (
             <div className="p-12 text-center text-xs text-slate-500 dark:text-slate-400">
-              <BookOpen className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+              <BookOpen aria-hidden="true" className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
               <p className="font-medium text-slate-700 dark:text-slate-300">
                 No finished milestones in this category yet
               </p>
@@ -426,7 +429,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
                       {chap.subjectCode && (
                         <>
                           <span aria-hidden="true">·</span>
-                          <span className="font-mono text-indigo-600 dark:text-indigo-400 font-semibold">
+                          <span className="font-mono text-indigo-600 dark:text-indigo-300 font-semibold">
                             {chap.subjectCode}
                           </span>
                         </>
@@ -445,7 +448,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
                 <div className="flex items-center gap-2 text-xs shrink-0 flex-wrap text-slate-500 dark:text-slate-400">
                   <span className="text-teal-600 dark:text-teal-400 font-medium">Notes ✓</span>
                   <span aria-hidden="true">·</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-medium">Deep Study ✓</span>
+                  <span className="text-indigo-600 dark:text-indigo-300 font-medium">Deep Study ✓</span>
                   <span aria-hidden="true">·</span>
                   <span className="text-violet-600 dark:text-violet-400 font-medium">Revision ✓</span>
                 </div>

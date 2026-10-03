@@ -1,6 +1,13 @@
-import React, { lazy, Suspense, useCallback, useState, useEffect, useMemo } from 'react';
+import React, { lazy, Suspense, useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import { useTimeout } from './hooks/useTimeout';
 import { updateTaskInWeeks } from './utils/taskUtils';
+import { readStored, readStoredText, writeStored, writeStoredText, removeStored, allowStorageReplacement, restoreStored, downloadRecoveryData } from './utils/storage';
+import { validateWeeks, validatePrograms, validateBackup } from './utils/dataValidation';
+import { mergeBackups } from './utils/backup';
+import { loadStudySessions, STUDY_SESSIONS_STORAGE_KEY, ACTIVE_SESSION_STORAGE_KEY } from './utils/studySessionUtils';
+import { STUDY_GOALS_STORAGE_KEY, DAILY_CAPACITY_STORAGE_KEY, GOOGLE_CALENDAR_STORAGE_KEY, loadGoogleCalendarConfig, DEFAULT_STUDY_GOALS, DEFAULT_DAILY_CAPACITY, DEFAULT_GOOGLE_CALENDAR_CONFIG } from './utils/calendarGoalsUtils';
+import { REVISION_SCHEDULE_STORAGE_KEY, REMINDER_PREFS_STORAGE_KEY, DEFAULT_REVISION_SCHEDULE, DEFAULT_REMINDER_PREFERENCES } from './utils/spacedRevisionUtils';
+import { StorageStatus } from './components/ui/Recovery';
 import {
   WeekPlan,
   Task,
@@ -10,11 +17,13 @@ import {
   SpacedRevisionSchedule,
   ReminderPreferences,
 } from './types';
-import { getSundaySep27Week } from './utils/sampleData';
+import { getStarterWeek, STARTER_WEEK_DATE } from './utils/sampleData';
 import { INITIAL_PROGRAM_TABS } from './utils/academicProgramsData';
 import { formatWeekTitle, getSunday, toDateKey, formatWeekRange, getNextSunday, parseDateKey } from './utils/dateUtils';
 import { Navbar } from './components/Navbar';
 import { CurrentWeekView } from './components/CurrentWeekView';
+import { WorkspaceFooter } from './components/workspace/WorkspaceFooter';
+import { PageHeader, SegmentedControl } from './components/ui/Primitives';
 import type { FullBackupData } from './components/UnifiedBackupModal';
 import {
   loadRevisionSchedule,
@@ -36,10 +45,12 @@ import {
   NcertNotesStore,
   TOTAL_NCERT_TASKS,
   NCERT_STORAGE_KEY,
+  NCERT_NOTES_STORAGE_KEY,
+  migrateNcertProgressStore,
   getAllFlatChapters,
   NcertFlatChapter,
 } from './utils/ncertData';
-import { Sparkles, Plus, GraduationCap } from 'lucide-react';
+import { Sparkles, Plus } from 'lucide-react';
 import type { NavDestination } from './components/MobileNavDrawer';
 
 const CalendarView = lazy(() => import('./components/CalendarView').then((module) => ({ default: module.CalendarView })));
@@ -63,62 +74,34 @@ const UploadHandwrittenPlanModal = lazy(() => import('./components/UploadHandwri
 const STORAGE_KEY = 'sunday_plan_tracker_storage_v3';
 const PROGRAMS_STORAGE_KEY = 'sunday_plan_academic_programs_v3';
 const THEME_KEY = 'sunday_plan_theme_v1';
+const WEEK_KEYS = [STORAGE_KEY, 'sunday_plan_tracker_storage_v2', 'sunday_plan_tracker_storage_v1'];
+const PROGRAM_KEYS = [PROGRAMS_STORAGE_KEY, 'sunday_plan_academic_programs_v2', 'sunday_plan_academic_programs_v1', 'academicPrograms'];
+const NCERT_KEYS = [NCERT_STORAGE_KEY, 'ncertSocialScienceProgress_v2', 'ncertSocialScienceProgress_v1', 'ncertSocialScienceProgress'];
 
 export default function App() {
+  const [dataRevision, setDataRevision] = useState(0);
   // Weekly plans state
-  const [weeks, setWeeks] = useState<WeekPlan[]>(() => {
-    const saved =
-      localStorage.getItem(STORAGE_KEY) ||
-      localStorage.getItem('sunday_plan_tracker_storage_v2') ||
-      localStorage.getItem('sunday_plan_tracker_storage_v1');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      } catch (err) {
-        console.error('Failed to parse stored weekly tasks:', err);
-      }
-    }
-    return [getSundaySep27Week()];
-  });
+  const [weeks, setWeeks] = useState<WeekPlan[]>(() => readStored(
+    [STORAGE_KEY, 'sunday_plan_tracker_storage_v2', 'sunday_plan_tracker_storage_v1'],
+    value => { const plans = validateWeeks(value); if (!plans.length) throw new Error('Empty weekly plans'); return plans; },
+    [getStarterWeek()],
+  ));
 
   // Track active week ID
   const [activeWeekId, setActiveWeekId] = useState<string>(() => {
-    if (weeks.some((w) => w.id === '2026-09-27')) {
-      return '2026-09-27';
-    }
     if (weeks.length > 0) {
       const sorted = [...weeks].sort((a, b) => b.sundayDate.localeCompare(a.sundayDate));
       return sorted[0].id;
     }
-    return '2026-09-27';
+    return STARTER_WEEK_DATE;
   });
 
   // Academic Program Tabs
-  const [programs, setPrograms] = useState<ProgramTab[]>(() => {
-    const saved =
-      localStorage.getItem(PROGRAMS_STORAGE_KEY) ||
-      localStorage.getItem('sunday_plan_academic_programs_v2') ||
-      localStorage.getItem('sunday_plan_academic_programs_v1') ||
-      localStorage.getItem('academicPrograms');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (
-          Array.isArray(parsed) &&
-          parsed.length >= 5 &&
-          parsed.some((p: ProgramTab) => p.id === 'tab-canva')
-        ) {
-          return parsed;
-        }
-      } catch (err) {
-        console.error('Failed to parse stored programs:', err);
-      }
-    }
-    return INITIAL_PROGRAM_TABS;
-  });
+  const [programs, setPrograms] = useState<ProgramTab[]>(() => readStored(
+    [PROGRAMS_STORAGE_KEY, 'sunday_plan_academic_programs_v2', 'sunday_plan_academic_programs_v1', 'academicPrograms'],
+    value => { const tabs = validatePrograms(value); if (!tabs.length) throw new Error('Empty programs'); return tabs; },
+    INITIAL_PROGRAM_TABS,
+  ));
 
   // Main Tabs: 'weekly_planning' (default) | 'academic_tracks' | 'ncert' | 'calendar' | 'progress'
   const [mainTab, setMainTab] = useState<MainTab>('weekly_planning');
@@ -134,9 +117,9 @@ export default function App() {
 
   // Dark mode
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem(THEME_KEY);
+    const saved = readStoredText(THEME_KEY);
     if (saved) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return true;
   });
 
   // Spaced Revision & Reminders
@@ -206,37 +189,38 @@ export default function App() {
 
   // Auto-sync preference for linked NCERT tasks
   const [autoSyncNcert, setAutoSyncNcert] = useState<boolean>(() => {
-    return localStorage.getItem('sunday_plan_auto_sync_ncert') === 'true';
+    return readStoredText('sunday_plan_auto_sync_ncert') === 'true';
   });
 
   useEffect(() => {
-    localStorage.setItem('sunday_plan_auto_sync_ncert', autoSyncNcert ? 'true' : 'false');
+    writeStoredText('sunday_plan_auto_sync_ncert', autoSyncNcert ? 'true' : 'false');
   }, [autoSyncNcert]);
 
   // Sync weeks to localStorage
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(weeks));
+    writeStored(STORAGE_KEY, weeks);
   }, [weeks]);
 
   // Sync programs to localStorage
   useEffect(() => {
-    localStorage.setItem(PROGRAMS_STORAGE_KEY, JSON.stringify(programs));
+    writeStored(PROGRAMS_STORAGE_KEY, programs);
   }, [programs]);
 
   // Sync theme to DOM and localStorage
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
-      localStorage.setItem(THEME_KEY, 'dark');
+      writeStoredText(THEME_KEY, 'dark');
     } else {
       document.documentElement.classList.remove('dark');
-      localStorage.setItem(THEME_KEY, 'light');
+      writeStoredText(THEME_KEY, 'light');
     }
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--canvas').trim());
   }, [isDarkMode]);
 
   // Active week lookup
   const activeWeek = useMemo(() => {
-    return weeks.find((w) => w.id === activeWeekId) || weeks[0] || getSundaySep27Week();
+    return weeks.find((w) => w.id === activeWeekId) || weeks[0] || getStarterWeek();
   }, [weeks, activeWeekId]);
 
   // All tasks across all weeks
@@ -283,6 +267,7 @@ export default function App() {
 
   // Trigger celebration confetti
   const triggerConfetti = async () => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     try {
       const { default: confetti } = await import('canvas-confetti');
       confetti({
@@ -627,14 +612,52 @@ export default function App() {
   };
 
   // Full backup restore
-  const handleRestoreFullBackup = (backup: FullBackupData) => {
-    if (backup.weeks) setWeeks(backup.weeks);
-    if (backup.programs) setPrograms(backup.programs);
-    if (backup.ncertProgress) setNcertProgress(backup.ncertProgress);
+  const handleRestoreFullBackup = (input: FullBackupData, mode: 'replace' | 'merge') => {
+    const incoming = validateBackup(input);
+    incoming.ncertProgress = migrateNcertProgressStore(incoming.ncertProgress);
+    const backup = mode === 'merge' ? mergeBackups({ weeks, activeWeekId, programs, ncertProgress, ncertNotes, studySessions: loadStudySessions() }, incoming) : incoming;
+    const values: Record<string, unknown> = { [STORAGE_KEY]: backup.weeks, [PROGRAMS_STORAGE_KEY]: backup.programs, [NCERT_STORAGE_KEY]: backup.ncertProgress };
+    if (backup.ncertNotes) values[NCERT_NOTES_STORAGE_KEY] = backup.ncertNotes;
+    if (backup.studySessions) values[STUDY_SESSIONS_STORAGE_KEY] = backup.studySessions;
+    if (backup.goals) values[STUDY_GOALS_STORAGE_KEY] = backup.goals;
+    if (backup.dailyCapacity) values[DAILY_CAPACITY_STORAGE_KEY] = backup.dailyCapacity;
+    if (backup.calendarConfig) values[GOOGLE_CALENDAR_STORAGE_KEY] = backup.calendarConfig;
+    if (backup.revisionSchedule) values[REVISION_SCHEDULE_STORAGE_KEY] = backup.revisionSchedule;
+    if (backup.reminderPreferences) values[REMINDER_PREFS_STORAGE_KEY] = backup.reminderPreferences;
+    restoreStored(values);
+    allowStorageReplacement([...WEEK_KEYS, ...PROGRAM_KEYS, ...NCERT_KEYS, ...(backup.ncertNotes ? ['ncertChapterNotes'] : [])]);
+    setWeeks(backup.weeks);
+    setActiveWeekId(backup.activeWeekId);
+    setPrograms(backup.programs);
+    setSelectedProgramId(backup.programs[0].id);
+    setNcertProgress(backup.ncertProgress);
     if (backup.ncertNotes) setNcertNotes(backup.ncertNotes);
     if (backup.revisionSchedule) setRevisionSchedule(backup.revisionSchedule);
     if (backup.reminderPreferences) setReminderPreferences(backup.reminderPreferences);
-    showToast('Full backup restored successfully');
+    if (backup.preferences?.isDarkMode !== undefined) setIsDarkMode(backup.preferences.isDarkMode);
+    if (backup.preferences?.autoSyncNcert !== undefined) setAutoSyncNcert(backup.preferences.autoSyncNcert);
+    setDataRevision(value => value + 1);
+  };
+  const resetPlannerData = (section: 'weekly' | 'ncert' | 'study' | 'entire') => {
+    if (section === 'entire') {
+      handleRestoreFullBackup({ weeks: [getStarterWeek()], activeWeekId: STARTER_WEEK_DATE, programs: INITIAL_PROGRAM_TABS, ncertProgress: {}, ncertNotes: {}, studySessions: [], goals: DEFAULT_STUDY_GOALS, dailyCapacity: DEFAULT_DAILY_CAPACITY, calendarConfig: DEFAULT_GOOGLE_CALENDAR_CONFIG, revisionSchedule: DEFAULT_REVISION_SCHEDULE, reminderPreferences: DEFAULT_REMINDER_PREFERENCES, preferences: { isDarkMode, autoSyncNcert: false } }, 'replace');
+      removeStored(ACTIVE_SESSION_STORAGE_KEY);
+      [...WEEK_KEYS.slice(1), ...PROGRAM_KEYS.slice(1), ...NCERT_KEYS.slice(1), 'ncertChapterNotes'].forEach(removeStored);
+    } else if (section === 'weekly') {
+      const resetWeeks = weeks.map(week => ({ ...week, tasks: week.tasks.map(task => ({ ...task, completed: false, completedAt: undefined })) }));
+      restoreStored({ [STORAGE_KEY]: resetWeeks });
+      allowStorageReplacement(WEEK_KEYS);
+      WEEK_KEYS.slice(1).forEach(removeStored);
+      setWeeks(resetWeeks);
+    } else if (section === 'ncert') {
+      restoreStored({ [NCERT_STORAGE_KEY]: {} });
+      allowStorageReplacement(NCERT_KEYS);
+      NCERT_KEYS.slice(1).forEach(removeStored);
+      setNcertProgress({});
+    } else {
+      restoreStored({ [STUDY_SESSIONS_STORAGE_KEY]: [] });
+      setDataRevision(value => value + 1);
+    }
   };
 
   // Navigation Destination Selector
@@ -674,12 +697,25 @@ export default function App() {
     return 'weekly_planning';
   }, [mainTab, progressSubView]);
 
+  const viewName = mainTab === 'academic_tracks' && academicSubView === 'audit' ? 'Academic Audit' : {
+    weekly_planning: 'Weekly Planning', calendar: 'Study Calendar', academic_tracks: 'Academic Tracks',
+    ncert: 'NCERT Study Tracker', analytics: 'Progress Analytics', velocity: 'Weekly History', audit: 'Academic Audit',
+  }[currentNavSection];
+  const previousView = useRef(viewName);
+  useEffect(() => {
+    document.title = `${viewName} | WeeklyPlan`;
+    if (previousView.current !== viewName) document.getElementById('main-content')?.focus({ preventScroll: true });
+    previousView.current = viewName;
+  }, [viewName]);
+
   return (
-    <div className="min-h-screen bg-[#F1F4F9] dark:bg-[#080C14] bg-ambient-mesh text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors selection:bg-indigo-500 selection:text-white">
+    <div className="app-shell">
+      <a href="#main-content" className="skip-link">Skip to content</a>
+      <StorageStatus />
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 animate-in slide-in-from-bottom-5 fade-in duration-200">
-          <div className="bg-slate-950/95 dark:bg-slate-900/95 text-white px-4 py-2.5 rounded-xl shadow-xl border border-slate-800 text-xs font-semibold flex items-center gap-2">
+        <div className="app-toast" role="status" aria-live="polite">
+          <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-indigo-400" />
             <span>{toastMessage}</span>
           </div>
@@ -688,12 +724,8 @@ export default function App() {
 
       {/* Primary Top Navbar */}
       <Navbar
-        mainTab={mainTab}
-        onSelectMainTab={setMainTab}
         currentSection={currentNavSection}
         onSelectDestination={handleSelectDestination}
-        programs={programs}
-        activeWeekTitle={activeWeek?.title}
         pendingTasksCount={pendingTasksCount}
         dueRevisionsCount={dueRevisionsCount}
         ncertPercent={ncertStats.percent}
@@ -702,23 +734,18 @@ export default function App() {
           setTaskModalInitialDate(undefined);
           setIsTaskModalOpen(true);
         }}
-        onOpenAddProgramModal={() => setIsAddProgramModalOpen(true)}
-        onOpenNewWeekModal={() => setIsNewWeekModalOpen(true)}
         onOpenNotebookModal={() => setIsNotebookModalOpen(true)}
         onOpenUploadScanModal={() => setIsUploadScanModalOpen(true)}
         onOpenExportModal={() => setIsExportModalOpen(true)}
-        onOpenCleanSlateModal={() => setIsCleanSlateModalOpen(true)}
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
         onOpenRemindersCenter={() => setIsRemindersCenterOpen(true)}
-        autoSyncNcert={autoSyncNcert}
-        onToggleAutoSyncNcert={() => setAutoSyncNcert(!autoSyncNcert)}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
-        <Suspense fallback={<div role="status" className="p-6 text-center text-slate-500">Loading view…</div>}>
+      <main id="main-content" tabIndex={-1} aria-label={viewName} className="app-main space-y-6">
+        <Suspense key={dataRevision} fallback={<div role="status" className="p-6 text-center text-slate-500 dark:text-slate-400">Loading view…</div>}>
         {/* ======================================================== */}
         {/* TAB 1: WEEKLY PLANNING VIEW (Primary Dashboard)         */}
         {/* ======================================================== */}
@@ -726,6 +753,9 @@ export default function App() {
           <CurrentWeekView
             week={activeWeek}
             allWeeks={weeks}
+            programs={programs}
+            onOpenProgram={id => { setSelectedProgramId(id); setMainTab('academic_tracks'); setAcademicSubView('track'); }}
+            onViewHistory={() => { setMainTab('progress'); setProgressSubView('velocity'); }}
             onSelectWeekId={setActiveWeekId}
             onToggleTask={handleToggleTask}
             onDeleteTask={handleDeleteTask}
@@ -765,55 +795,16 @@ export default function App() {
         {/* ======================================================== */}
         {mainTab === 'academic_tracks' && (
           <div className="space-y-6">
-            {/* Tracks Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-xs font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider">
-                  <GraduationCap className="w-4 h-4" />
-                  <span>Academic Curriculum & Syllabus Tracker</span>
-                </div>
-                <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white">
-                  Academic Tracks
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                  Track 3-stage chapter progress (Reading & Notes, Deep Study, Revision) for B.Ed, M.A. History, CTET, UGC NET, and Canva.
-                </p>
-              </div>
-
-              {/* Sub-navigation & Add Track button */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
-                  <button
-                    onClick={() => setAcademicSubView('track')}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${
-                      academicSubView === 'track'
-                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
-                    }`}
-                  >
-                    Curriculum View
-                  </button>
-                  <button
-                    onClick={() => setAcademicSubView('audit')}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${
-                      academicSubView === 'audit'
-                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
-                    }`}
-                  >
-                    Audit Report
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => setIsAddProgramModalOpen(true)}
-                  className="px-3 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Track</span>
-                </button>
-              </div>
-            </div>
+            <PageHeader eyebrow="Your study tracks" title="Academic Tracks"
+              description="Follow each chapter from reading and deep study to revision."
+              actions={<>
+                <select className="field w-auto max-w-full" aria-label="Select academic track" value={currentSelectedProgram.id} onChange={event => setSelectedProgramId(event.target.value)}>
+                  {programs.map(program => <option key={program.id} value={program.id}>{program.title}</option>)}
+                </select>
+                <button type="button" className="button button-primary" onClick={() => setIsAddProgramModalOpen(true)}><Plus size={16} />Add Track</button>
+              </>} />
+            <div className="w-fit max-w-full"><SegmentedControl label="Academic view" value={academicSubView} onChange={setAcademicSubView}
+              options={[{ value: 'track', label: 'Curriculum View' }, { value: 'audit', label: 'Audit Report' }]} /></div>
 
             {academicSubView === 'track' ? (
               <ProgramTrackView
@@ -848,6 +839,7 @@ export default function App() {
               />
             ) : (
               <DashboardReportView
+                headingLevel={2}
                 weeks={weeks}
                 programs={programs}
                 onSelectTab={(progId) => {
@@ -886,7 +878,10 @@ export default function App() {
               showToast('NCERT progress reset');
             }}
             onImportProgress={(importedStore) => {
-              setNcertProgress(importedStore);
+              const validated = migrateNcertProgressStore(importedStore);
+              restoreStored({ [NCERT_STORAGE_KEY]: validated });
+              allowStorageReplacement(NCERT_KEYS);
+              setNcertProgress(validated);
               showToast('NCERT progress imported successfully');
             }}
             onSaveChapterNotes={(chapterId, data) => {
@@ -921,39 +916,8 @@ export default function App() {
         {/* ======================================================== */}
         {mainTab === 'progress' && (
           <div className="space-y-6">
-            {/* View Sub-Tabs */}
-            <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 w-fit text-xs font-bold">
-              <button
-                onClick={() => setProgressSubView('analytics')}
-                className={`px-3.5 py-1.5 rounded-lg transition-all ${
-                  progressSubView === 'analytics'
-                    ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
-                }`}
-              >
-                Analytics & Velocity
-              </button>
-              <button
-                onClick={() => setProgressSubView('velocity')}
-                className={`px-3.5 py-1.5 rounded-lg transition-all ${
-                  progressSubView === 'velocity'
-                    ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
-                }`}
-              >
-                Multi-Week History
-              </button>
-              <button
-                onClick={() => setProgressSubView('audit')}
-                className={`px-3.5 py-1.5 rounded-lg transition-all ${
-                  progressSubView === 'audit'
-                    ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
-                }`}
-              >
-                Audit Report
-              </button>
-            </div>
+            <div className="w-fit max-w-full"><SegmentedControl label="Progress view" value={progressSubView} onChange={setProgressSubView}
+              options={[{ value: 'analytics', label: 'Analytics & Velocity' }, { value: 'velocity', label: 'Multi-Week History' }, { value: 'audit', label: 'Audit Report' }]} /></div>
 
             {progressSubView === 'analytics' && (
               <AdvancedAnalyticsView
@@ -1010,6 +974,7 @@ export default function App() {
         )}
         </Suspense>
       </main>
+      <WorkspaceFooter onOpenBackup={() => setIsBackupModalOpen(true)} />
 
       {/* ======================================================== */}
       {/* GLOBAL MODALS                                            */}
@@ -1183,29 +1148,29 @@ export default function App() {
           programs,
           ncertProgress,
           ncertNotes,
-          studySessions: [],
+          studySessions: loadStudySessions(),
           goals: loadStudyGoals(),
           dailyCapacity: loadDailyCapacity(),
           revisionSchedule,
           reminderPreferences,
+          calendarConfig: loadGoogleCalendarConfig(),
+          preferences: { isDarkMode, autoSyncNcert },
         }}
         onImportFullBackup={handleRestoreFullBackup}
         onResetWeeklyTasks={() => {
-          setWeeks([getSundaySep27Week()]);
+          resetPlannerData('weekly');
           showToast('Weekly tasks reset to default week');
         }}
         onResetNcertProgress={() => {
-          setNcertProgress({});
+          resetPlannerData('ncert');
           showToast('NCERT progress reset');
         }}
         onResetStudyHistory={() => {
+          resetPlannerData('study');
           showToast('History cleared');
         }}
         onResetEntirePlanner={() => {
-          setWeeks([getSundaySep27Week()]);
-          setPrograms(INITIAL_PROGRAM_TABS);
-          setNcertProgress({});
-          setNcertNotes({});
+          resetPlannerData('entire');
           showToast('Entire planner reset');
         }}
         onShowToast={showToast}
@@ -1293,16 +1258,12 @@ export default function App() {
         isOpen={isCleanSlateModalOpen}
         onClose={() => setIsCleanSlateModalOpen(false)}
         onConfirm={() => {
-          localStorage.removeItem(STORAGE_KEY);
-          localStorage.removeItem(PROGRAMS_STORAGE_KEY);
-          localStorage.removeItem(NCERT_STORAGE_KEY);
-          setWeeks([getSundaySep27Week()]);
-          setActiveWeekId('2026-09-27');
-          setPrograms(INITIAL_PROGRAM_TABS);
-          setNcertProgress({});
-          setNcertNotes({});
-          setIsCleanSlateModalOpen(false);
-          showToast('Reset to clean initial state');
+          try {
+            downloadRecoveryData();
+            resetPlannerData('entire');
+            setIsCleanSlateModalOpen(false);
+            showToast('Reset to clean initial state');
+          } catch { showToast('The reset could not be saved. Existing data is preserved.'); }
         }}
       />
       )}

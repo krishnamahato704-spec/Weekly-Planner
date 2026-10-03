@@ -58,12 +58,14 @@ export const HANDWRITTEN_NOTEBOOK_TASKS = [
   }
 ];
 
-export function getSundaySep27Week(): WeekPlan {
+export const STARTER_WEEK_DATE = '2026-10-04';
+
+export function getStarterWeek(): WeekPlan {
   return {
-    id: '2026-09-27',
-    sundayDate: '2026-09-27',
-    title: 'Week of Sunday, Sep 27',
-    focusGoal: 'Weekly Plan (Till 3 October) - Action Research, NCERT 6 & 7, CDP and NET prep',
+    id: STARTER_WEEK_DATE,
+    sundayDate: STARTER_WEEK_DATE,
+    title: 'Week of Sunday, Oct 4',
+    focusGoal: 'Weekly Plan (4–10 October) - Action Research, NCERT 6 & 7, CDP and NET prep',
     createdAt: '2026-09-26T14:00:00.000Z',
     tasks: [
       {
@@ -153,6 +155,5 @@ export function getSundaySep27Week(): WeekPlan {
 }
 
 export function getInitialDemoData(): WeekPlan[] {
-  return [getSundaySep27Week()];
+  return [getStarterWeek()];
 }
-

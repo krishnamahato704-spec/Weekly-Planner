@@ -1,3 +1,5 @@
+import { readStored, writeStored, removeStored } from './storage';
+import { validateStudySessions, validateActiveSession } from './dataValidation';
 import { StudySession, ActiveStudySession, Task } from '../types';
 
 export const STUDY_SESSIONS_STORAGE_KEY = 'sunday_plan_study_sessions_v1';
@@ -51,16 +53,7 @@ export const getGreeting = (): string => {
  * Loads all recorded study sessions from localStorage
  */
 export const loadStudySessions = (): StudySession[] => {
-  try {
-    const saved = localStorage.getItem(STUDY_SESSIONS_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) return parsed;
-    }
-  } catch (err) {
-    console.error('Failed to load study sessions:', err);
-  }
-  return [];
+  return readStored(STUDY_SESSIONS_STORAGE_KEY, validateStudySessions, []);
 };
 
 /**
@@ -68,7 +61,7 @@ export const loadStudySessions = (): StudySession[] => {
  */
 export const saveStudySessions = (sessions: StudySession[]): void => {
   try {
-    localStorage.setItem(STUDY_SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+    writeStored(STUDY_SESSIONS_STORAGE_KEY, sessions);
   } catch (err) {
     console.error('Failed to save study sessions:', err);
   }
@@ -78,18 +71,7 @@ export const saveStudySessions = (sessions: StudySession[]): void => {
  * Loads currently active study session if one was running
  */
 export const loadActiveStudySession = (): ActiveStudySession | null => {
-  try {
-    const saved = localStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed.startedAt === 'number') {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.error('Failed to load active study session:', err);
-  }
-  return null;
+  return readStored(ACTIVE_SESSION_STORAGE_KEY, validateActiveSession, null);
 };
 
 /**
@@ -98,9 +80,9 @@ export const loadActiveStudySession = (): ActiveStudySession | null => {
 export const saveActiveStudySession = (active: ActiveStudySession | null): void => {
   try {
     if (!active) {
-      localStorage.removeItem(ACTIVE_SESSION_STORAGE_KEY);
+      removeStored(ACTIVE_SESSION_STORAGE_KEY);
     } else {
-      localStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, JSON.stringify(active));
+      writeStored(ACTIVE_SESSION_STORAGE_KEY, active);
     }
   } catch (err) {
     console.error('Failed to save active study session:', err);

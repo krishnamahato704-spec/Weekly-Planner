@@ -2,7 +2,8 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import type { GoogleGenAI, Part } from '@google/genai';
+import { createHandwritingParser } from './server/handwriting';
+import { authorizeTranscription, createRequestGate, safeApiError, securityHeaders, validateApiRequest } from './server/security';
 
 dotenv.config();
 
@@ -11,10 +12,33 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
+  app.disable('x-powered-by');
   const PORT = Number(process.env.PORT) || 3000;
 
   const apiKey = process.env.GEMINI_API_KEY;
-  let ai: GoogleGenAI | undefined;
+  const parseHandwriting = createHandwritingParser(apiKey);
+  const enterRequest = createRequestGate();
+  app.use((req, res, next) => {
+    res.set(securityHeaders(req.secure || process.env.APP_URL?.startsWith('https://') === true, process.env.NODE_ENV !== 'production'));
+    if (req.path.startsWith('/api/')) res.set('Cache-Control', 'no-store');
+    next();
+  });
+  app.use('/api/ai/parse-handwritten-plan', async (req, res, next) => {
+    if (req.method !== 'POST') return res.status(405).set('Allow', 'POST').json({ error: 'Use POST for planner transcription.' });
+    try {
+      const origin = process.env.APP_URL && /^https?:\/\//.test(process.env.APP_URL) ? new URL(process.env.APP_URL).origin : `${req.protocol}://${req.get('host')}`;
+      validateApiRequest(req.get('origin'), req.get('sec-fetch-site'), req.get('content-type'), origin);
+      const release = enterRequest(req.ip || 'local');
+      res.once('close', release);
+      res.once('finish', release);
+      await authorizeTranscription(apiKey, process.env.TRANSCRIPTION_ACCESS_TOKEN, req.get('authorization'));
+      next();
+    } catch (error) {
+      const result = safeApiError(error);
+      if (result.retryAfter) res.set('Retry-After', String(result.retryAfter));
+      return res.status(result.status).json({ error: result.error });
+    }
+  });
 
   // POST /api/ai/parse-handwritten-plan
   // Accepts a base64 image or text notes and returns structured tasks
@@ -25,99 +49,11 @@ async function startServer() {
     };
     res.once('close', cancelRequest);
     try {
-      const { imageBase64, mimeType, additionalNotes } = req.body ?? {};
-
-      if ((imageBase64 != null && typeof imageBase64 !== 'string') ||
-          (mimeType != null && typeof mimeType !== 'string') ||
-          (additionalNotes != null && typeof additionalNotes !== 'string')) {
-        return res.status(400).json({ error: 'Image, MIME type, and notes must be strings.' });
-      }
-
-      if (!imageBase64 && !additionalNotes) {
-        return res.status(400).json({ error: 'Please provide an image of your handwritten notes or text prompt.' });
-      }
-
-      if (!apiKey) {
-        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
-      }
-
-      // Load the SDK on the first AI request and reuse its client thereafter.
-      const { GoogleGenAI, Type } = await import('@google/genai');
-      ai ??= new GoogleGenAI({
-        apiKey,
-        httpOptions: { timeout: 60_000, headers: { 'User-Agent': 'aistudio-build' } },
-      });
-      const parts: Part[] = [];
-
-      if (imageBase64) {
-        const cleanBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
-        parts.push({
-          inlineData: {
-            mimeType: mimeType || 'image/jpeg',
-            data: cleanBase64,
-          },
-        });
-      }
-
-      parts.push({
-        text: `You are an expert handwriting transcription assistant for weekly task planners, study logs, and notebooks.
-Examine this handwritten planner image or notes.
-1. Transcribe each individual task or goal item accurately.
-2. Note common abbreviations: e.g. "Re J" means "Reflective Journal", "CDP" means "Child Development & Pedagogy", "NET" means "UGC NET exam prep", "NCERT" means "NCERT textbooks".
-3. Categorize each item intelligently (e.g. Study, Research, Exam Prep, Skills, Work, Personal).
-4. Assign Priority: 'High', 'Medium', or 'Low' (items with circles, stars, underlines, or critical exams are High).
-5. Extract sub-targets, quantities, chapters, hours, or timeframes (e.g. "6 activities", "100 vocab + 50 idioms", "3 chapters", "7 lessons 1 hour each", "Till 3 October") into the notes field.
-6. Extract or suggest the week title (e.g. "Week of Sunday, Oct 4") and weekly focus goal.
-
-${additionalNotes ? `Additional user instructions: ${additionalNotes}` : ''}`,
-      });
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: [
-          {
-            role: 'user',
-            parts,
-          },
-        ],
-        config: {
-          abortSignal: controller.signal,
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              weekTitle: { type: Type.STRING, description: 'Suggested week title, e.g. Week of Sunday, Oct 4' },
-              focusGoal: { type: Type.STRING, description: 'Overall weekly objective or heading' },
-              tasks: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    title: { type: Type.STRING, description: 'Clean, transcribed task title' },
-                    category: { type: Type.STRING, description: 'Study, Research, Exam Prep, Skills, Work, Personal' },
-                    priority: { type: Type.STRING, enum: ['High', 'Medium', 'Low'], description: 'Priority level' },
-                    notes: { type: Type.STRING, description: 'Sub-targets, chapter counts, hours, or deadlines' },
-                  },
-                  required: ['title', 'category', 'priority'],
-                },
-              },
-            },
-            required: ['tasks'],
-          },
-        },
-      });
-
-      const parsed = JSON.parse(response.text || '{}');
-      return res.json({
-        success: true,
-        data: parsed,
-      });
-    } catch (err: any) {
+      return res.json(await parseHandwriting(req.body ?? {}, controller.signal));
+    } catch (err: unknown) {
       if (controller.signal.aborted) return;
-      console.error('Error parsing handwritten plan with Gemini:', err);
-      return res.status(500).json({
-        error: err.message || 'Failed to analyze handwritten notes. Please try a clearer photo or enter manually.',
-      });
+      const result = safeApiError(err);
+      return res.status(result.status).json({ error: result.error });
     } finally {
       res.off('close', cancelRequest);
     }
@@ -126,6 +62,13 @@ ${additionalNotes ? `Additional user instructions: ${additionalNotes}` : ''}`,
   // Health check endpoint
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
+  });
+  app.all('/api/health', (req, res) => res.status(405).set('Allow', 'GET, HEAD').json({ error: 'Use GET for the health check.' }));
+  app.use('/api', (req, res) => res.status(404).json({ error: 'API endpoint not found.' }));
+  app.use((error: { type?: string; status?: number }, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (!req.path.startsWith('/api/')) return next(error);
+    const status = error.type === 'entity.too.large' ? 413 : error.type === 'entity.parse.failed' ? 400 : error.status === 415 ? 415 : 500;
+    return res.status(status).json({ error: status === 413 ? 'Planner data exceeds the 25 MiB request limit.' : status === 400 ? 'Planner data must be valid JSON.' : 'The planner upload could not be read.' });
   });
 
   // Mount Vite middlewares in development or static serve in production
@@ -148,9 +91,11 @@ ${additionalNotes ? `Additional user instructions: ${additionalNotes}` : ''}`,
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`SundayPlan server running on http://0.0.0.0:${PORT}`);
   });
+  server.requestTimeout = 30_000;
+  server.headersTimeout = 15_000;
 }
 
 startServer();
