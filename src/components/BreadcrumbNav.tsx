@@ -26,7 +26,7 @@ export const BreadcrumbNav: React.FC<BreadcrumbNavProps> = ({ items, className =
           <button
             type="button"
             onClick={parentItem.onClick}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 py-1 px-1.5 -ml-1.5 rounded-lg transition-colors min-h-[36px]"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 py-1 px-1.5 -ml-1.5 rounded-lg transition-colors min-h-[44px]"
             aria-label={`Back to ${parentItem.label}`}
           >
             <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5]" />

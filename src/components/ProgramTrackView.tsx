@@ -253,9 +253,9 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Header Banner */}
-      <div className="surface p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="surface p-4 sm:p-6 flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
             <span className="font-semibold text-slate-900 dark:text-slate-200">
               {program.badge || program.type.toUpperCase()}
             </span>
@@ -337,7 +337,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="card-grid">
             {siTasks.map((task) => {
               const isFinished = task.status === 'completed';
               const pct = Math.min(100, Math.round((task.currentCount / task.targetCount) * 100));
@@ -454,8 +454,13 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
             </button>
           </div>
 
-          {/* Subject Switcher Strip */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none text-xs">
+          <div className="md:hidden">
+            <label className="field-label" htmlFor="track-subject-selector">Subject</label>
+            <select id="track-subject-selector" className="field" value={activeSubject?.id || ''} onChange={event => setSelectedSubjectId(event.target.value)}>
+              {program.subjects.map(subject => <option key={subject.id} value={subject.id}>{subject.code ? `${subject.code} · ` : ''}{subject.name}</option>)}
+            </select>
+          </div>
+          <div className="wrap-controls hidden md:flex pb-2 text-xs">
             {program.subjects.map((sub) => {
               const isSelected = sub.id === (activeSubject?.id || '');
               const totalChaps = sub.chapters.length;
@@ -465,7 +470,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                 <button
                   key={sub.id}
                   onClick={() => setSelectedSubjectId(sub.id)}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 flex items-center gap-2 border ${
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-all flex flex-wrap items-center gap-2 border ${
                     isSelected
                       ? 'bg-slate-950 text-white border-slate-950 dark:bg-white dark:text-slate-950 dark:border-white shadow-2xs font-semibold'
                       : 'bg-white text-slate-600 border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 hover:text-slate-950 dark:hover:text-white'
@@ -486,7 +491,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
             <div className="surface p-5 sm:p-6 space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/80 pb-4">
                 <div>
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex flex-wrap items-baseline gap-2">
                     {activeSubject.code && (
                       <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                         {activeSubject.code}
@@ -516,7 +521,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
               {isAddingChapter && (
                 <form
                   onSubmit={(e) => handleAddChapterSubmit(e, activeSubject.id)}
-                  className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex items-center gap-2.5 animate-in fade-in"
+                  className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-2.5 animate-in fade-in"
                 >
                   <input
                     type="text"
@@ -524,7 +529,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                     value={newChapterTitle}
                     onChange={(e) => setNewChapterTitle(e.target.value)}
                     placeholder={`Enter Chapter ${activeSubject.chapters.length + 1} topic title...`}
-                    className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                    className="min-w-0 flex-1 px-3 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   />
                   <button
                     type="submit"
@@ -550,7 +555,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                   return (
                     <div
                       key={chap.id}
-                      className={`p-3.5 sm:p-4 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-3.5 ${
+                      className={`p-3.5 sm:p-4 rounded-xl border transition-all chapter-row ${
                         isFullyFinished
                           ? 'border-emerald-300/80 dark:border-emerald-800/80 bg-emerald-50/20 dark:bg-emerald-950/20'
                           : 'border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/90 hover:border-slate-300 dark:hover:border-slate-700 shadow-2xs'
@@ -563,7 +568,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
 
                         <div className="flex-1 min-w-0">
                           <h4
-                            className={`text-sm font-semibold truncate ${
+                            className={`text-sm font-semibold ${
                               isFullyFinished
                                 ? 'text-emerald-950 dark:text-emerald-200 line-through opacity-75'
                                 : 'text-slate-900 dark:text-white'
@@ -581,7 +586,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                       </div>
 
                       {/* 3-Stage Checklist Toggles */}
-                      <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                      <div className="chapter-controls">
                         {/* 1. Reading & Notes */}
                         <label
                           className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg border cursor-pointer select-none transition-colors ${
@@ -671,7 +676,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
           {/* Add Subject Modal */}
           {isAddingSubject && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-              <div className="surface w-full max-w-md p-6 space-y-4">
+              <div className="modal-panel overflow-y-auto surface w-full max-w-md p-6 space-y-4">
                 <h3 className="text-base font-bold text-slate-950 dark:text-white">
                   Add Subject to {program.title}
                 </h3>

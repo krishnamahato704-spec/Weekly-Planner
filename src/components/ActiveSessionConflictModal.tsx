@@ -32,7 +32,7 @@ export const ActiveSessionConflictModal: React.FC<ActiveSessionConflictModalProp
       aria-modal="true"
     >
       <div
-        className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 space-y-4"
+        className="modal-panel overflow-y-auto w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3">
@@ -79,7 +79,7 @@ export const ActiveSessionConflictModal: React.FC<ActiveSessionConflictModalProp
           <button
             type="button"
             onClick={onContinueCurrent}
-            className="w-full py-2.5 px-4 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 min-h-[42px]"
+            className="w-full py-2.5 px-4 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 min-h-[44px]"
           >
             <Play className="w-3.5 h-3.5 fill-white" />
             <span>Continue Current Session</span>
@@ -88,7 +88,7 @@ export const ActiveSessionConflictModal: React.FC<ActiveSessionConflictModalProp
           <button
             type="button"
             onClick={onFinishCurrentAndStartNew}
-            className="w-full py-2 px-4 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-center gap-1.5 min-h-[40px]"
+            className="w-full py-2 px-4 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-center gap-1.5 min-h-[44px]"
           >
             <Square className="w-3.5 h-3.5" />
             <span>Finish Current & Start New</span>

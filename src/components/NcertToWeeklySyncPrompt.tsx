@@ -27,7 +27,7 @@ export const NcertToWeeklySyncPrompt: React.FC<NcertToWeeklySyncPromptProps> = (
       aria-labelledby="ncert-to-weekly-sync-title"
     >
       <div
-        className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 space-y-4"
+        className="modal-panel overflow-y-auto w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
@@ -75,7 +75,7 @@ export const NcertToWeeklySyncPrompt: React.FC<NcertToWeeklySyncPromptProps> = (
           Would you like to mark this task complete in your active Weekly Plan as well?
         </p>
 
-        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
           <button
             type="button"
             onClick={onDismiss}

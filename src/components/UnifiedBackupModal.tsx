@@ -214,7 +214,7 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
       aria-modal="true"
     >
       <div
-        className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 space-y-4 max-h-[90vh] flex flex-col"
+        className="modal-panel overflow-y-auto w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 space-y-4 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -241,7 +241,7 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
         </div>
 
         {/* Tab switch */}
-        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 text-xs font-semibold shrink-0">
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 text-xs font-semibold shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('export')}
@@ -281,7 +281,7 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1">
           {/* TAB 1: EXPORT */}
           {activeTab === 'export' && (
             <div className="space-y-4 text-xs">
@@ -494,7 +494,7 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
                         placeholder="RESET"
                         className="w-full px-3 py-1.5 text-xs rounded-lg border border-rose-300 dark:border-rose-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white uppercase font-bold focus:outline-none focus:ring-2 focus:ring-rose-500"
                       />
-                      <div className="flex items-center justify-end gap-2 pt-1">
+                      <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
                         <button
                           type="button"
                           onClick={() => setResetType(null)}
@@ -536,7 +536,7 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     A safety backup file will be saved to your downloads before proceeding.
                   </p>
-                  <div className="flex items-center justify-end gap-2 pt-1">
+                  <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => setResetType(null)}
@@ -563,7 +563,7 @@ export const UnifiedBackupModal: React.FC<UnifiedBackupModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors min-h-[38px]"
+          className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors min-h-[44px]"
           >
             Close
           </button>

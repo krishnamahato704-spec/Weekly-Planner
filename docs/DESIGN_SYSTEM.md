@@ -32,9 +32,14 @@ Use these shared classes:
 - `surface`: themed card background, border, 14px radius, and a small shadow.
 - `button button-primary`, `button button-secondary`: 44px minimum-height actions.
 - `icon-button`, `icon-button-danger`: 44px icon controls with visible hover and focus states.
-- `field`, `field-label`: inputs, selects, and labels. Mobile fields use 16px text to avoid focus zoom on iOS.
+- `field`, `field-label`: inputs, selects, and labels. Fields use 16px text at widths up to 820px.
 - `page-title`, `page-description`, `section-title`, `eyebrow`, `text-muted`: the text hierarchy.
 - `segmented-control`, `segment`: mutually exclusive options represented as a labeled group of toggle buttons.
+- `wrap-controls`, `chapter-controls`: wrapping control groups with 44px touch targets.
+- `card-grid`, `compact-card-grid`, `class-progress-grid`: columns sized by the available container width.
+- `modal-panel`: a scrollable dialog surface constrained by the dynamic viewport height.
+
+Class and subject navigation uses labeled selects below 768px. Larger screens use wrapping buttons. Chapter rows stay stacked until 1536px, so their checklists have space beside the desktop sidebar. Long task titles, categories, notes, and week names can wrap inside cards. See [the responsive review](RESPONSIVE_REVIEW.md) for the viewport matrix and validation limits.
 
 The font request now contains only Plus Jakarta Sans. Both Tailwind's `font-sans` and display text use the same family with system fallbacks. The original request included extra families; the UI no longer depends on them. Georgia remains a local serif fallback for existing notebook text.
 

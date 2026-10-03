@@ -80,7 +80,7 @@ export const ManualStudySessionModal: React.FC<ManualStudySessionModalProps> = (
       aria-modal="true"
     >
       <div
-        className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 space-y-4"
+        className="modal-panel overflow-y-auto w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -114,7 +114,7 @@ export const ManualStudySessionModal: React.FC<ManualStudySessionModalProps> = (
             <select
               value={selectedTaskId}
               onChange={(e) => setSelectedTaskId(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[42px]"
+              className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
             >
               <option value="custom">-- Custom Study Work --</option>
               {tasks.map((t) => (
@@ -147,7 +147,7 @@ export const ManualStudySessionModal: React.FC<ManualStudySessionModalProps> = (
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[40px]"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
               />
             </div>
             <div>
@@ -158,7 +158,7 @@ export const ManualStudySessionModal: React.FC<ManualStudySessionModalProps> = (
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[40px]"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
               />
             </div>
           </div>
@@ -231,7 +231,7 @@ export const ManualStudySessionModal: React.FC<ManualStudySessionModalProps> = (
           </div>
 
           {/* Footer buttons */}
-          <div className="flex items-center justify-end gap-2.5 pt-2">
+          <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
             <button
               type="button"
               onClick={onClose}
@@ -241,7 +241,7 @@ export const ManualStudySessionModal: React.FC<ManualStudySessionModalProps> = (
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 min-h-[40px]"
+              className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 min-h-[44px]"
             >
               <Check className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Log Study Session</span>

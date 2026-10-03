@@ -80,9 +80,9 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1.5">
             <Award className="w-3.5 h-3.5 text-amber-500" />
             <span className="font-semibold text-slate-700 dark:text-slate-300">
               Academic Audit & Portfolio Record
@@ -110,7 +110,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
       </div>
 
       {/* 4 Global Metric Modules with Sophisticated Color Distribution */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="compact-card-grid">
         {/* Module 1: Total Finished Tasks */}
         <div className="surface p-5 flex flex-col justify-between">
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -220,7 +220,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
           <span className="text-xs text-slate-400 font-medium">Click any card to open track</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div className="compact-card-grid">
           {programs.map((prog) => {
             const chaps = (prog.subjects || []).flatMap((s) => s.chapters);
             const finished = chaps.filter((c) => c.isFinished).length;
@@ -340,10 +340,10 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
           </div>
 
           {/* Filter Bar with clean segmented styling */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-900/90 rounded-xl border border-slate-200/60 dark:border-slate-800/60 overflow-x-auto text-xs">
+          <div className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-900/90 rounded-xl border border-slate-200/60 dark:border-slate-800/60 flex-wrap text-xs">
             <button
               onClick={() => setSelectedFilter('all')}
-              className={`px-3 py-1 rounded-lg transition-colors whitespace-nowrap font-medium ${
+              className={`px-3 py-1 rounded-lg transition-colors  font-medium ${
                 selectedFilter === 'all'
                   ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs font-semibold'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
@@ -355,7 +355,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
               <button
                 key={p.id}
                 onClick={() => setSelectedFilter(p.id)}
-                className={`px-3 py-1 rounded-lg transition-colors whitespace-nowrap font-medium ${
+                className={`px-3 py-1 rounded-lg transition-colors  font-medium ${
                   selectedFilter === p.id
                     ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
@@ -366,7 +366,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             ))}
             <button
               onClick={() => onSelectTab('ncert-track')}
-              className="px-3 py-1 rounded-lg transition-colors whitespace-nowrap font-medium text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1"
+              className="px-3 py-1 rounded-lg transition-colors  font-medium text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1"
             >
               <span>📚</span>
               <span>NCERT ({ncertPercent}%)</span>
@@ -380,7 +380,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             <h3 className="text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
               B.Ed School Internship Completed Deliverables ({completedSiTasks.length})
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="compact-card-grid">
               {completedSiTasks.map((t) => (
                 <div key={t.id} className="p-3.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs">
                   <div>

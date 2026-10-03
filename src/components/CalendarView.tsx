@@ -309,7 +309,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
             {/* Category Dropdown Filter */}
             {categories.length > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Filter className="w-3.5 h-3.5 text-slate-400" />
                 <select
                   aria-label="Calendar task category"
@@ -363,15 +363,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   {pendingTasks.map((task) => (
                     <div
                       key={task.id}
-                      className="group bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs hover:border-indigo-300 dark:hover:border-indigo-800 transition-all flex items-start justify-between gap-3"
+                      className="group bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs hover:border-indigo-300 dark:hover:border-indigo-800 transition-all calendar-task flex items-start justify-between gap-3"
                     >
                       <div className="flex items-start gap-3 min-w-0 flex-1">
                         <button
                           type="button"
                           onClick={() => onToggleTask(task.id)}
-                          className="mt-0.5 w-5 h-5 rounded-lg border-2 border-slate-300 dark:border-slate-600 hover:border-indigo-500 dark:hover:border-indigo-400 flex items-center justify-center transition-colors shrink-0 bg-white dark:bg-slate-800"
+                          className="icon-button"
                           title="Mark as Completed"
                         >
+                          <span className="w-5 h-5 rounded-lg border-2 border-slate-300 dark:border-slate-600" aria-hidden="true" />
                           <span className="sr-only">Complete task</span>
                         </button>
 
@@ -483,12 +484,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                         <div className="flex items-center gap-2.5 min-w-0">
                           <button
                             onClick={() => onToggleTask(task.id)}
-                            className="w-4 h-4 rounded-md bg-emerald-600 text-white flex items-center justify-center shrink-0"
+                            className="icon-button"
                             title="Mark as Incomplete"
                           >
-                            <Check className="w-3 h-3 stroke-[3]" />
+                            <span className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center"><Check className="w-3 h-3 stroke-[3]" /></span>
                           </button>
-                          <span className="text-xs font-bold text-slate-900 dark:text-white line-through opacity-80 truncate">
+                          <span className="text-sm font-bold text-slate-900 dark:text-white line-through opacity-80">
                             {task.title}
                           </span>
                         </div>
@@ -519,7 +520,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       {/* ======================================================== */}
       {viewMode === 'month_overview' && (
         <div className="space-y-4">
-          <div className="surface p-4 flex items-center justify-between">
+          <div className="surface p-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-base font-bold text-slate-950 dark:text-white">
               {monthBlocks.monthName} — Weekly Planning Blocks
             </h2>
@@ -555,7 +556,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm font-bold text-slate-900 dark:text-white">
                           {block.label}
                         </span>
@@ -605,7 +606,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           aria-modal="true"
         >
           <div
-            className="surface w-full max-w-md p-5 space-y-4"
+            className="modal-panel overflow-y-auto surface w-full max-w-md p-5 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">

@@ -127,7 +127,7 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
       aria-labelledby="chapter-notes-title"
     >
       <div
-        className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 flex flex-col max-h-[90vh] overflow-hidden"
+        className="modal-panel overflow-y-auto w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 flex flex-col "
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -303,7 +303,7 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
                     className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex flex-wrap items-center justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => setIsAddingResource(false)}
@@ -329,7 +329,7 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
           <button
             type="button"
             onClick={() => onToggleNotesComplete(chapterId)}
-            className={`px-3 py-2 text-xs font-semibold rounded-xl border transition-colors flex items-center justify-center gap-1.5 min-h-[40px] ${
+            className={`px-3 py-2 text-xs font-semibold rounded-xl border transition-colors flex items-center justify-center gap-1.5 min-h-[44px] ${
               isNotesCompleted
                 ? 'bg-amber-100 dark:bg-amber-950/70 border-amber-300 text-amber-800 dark:text-amber-300'
                 : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-amber-400'
@@ -349,18 +349,18 @@ export const NcertChapterNotesModal: React.FC<NcertChapterNotesModalProps> = ({
           </button>
 
           {/* Save & Close */}
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-xl transition-colors min-h-[40px]"
+              className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-xl transition-colors min-h-[44px]"
             >
               Close
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 min-h-[40px]"
+              className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 min-h-[44px]"
             >
               <Save className="w-3.5 h-3.5" />
               <span>{hasUnsavedChanges ? 'Save Changes' : 'Saved'}</span>

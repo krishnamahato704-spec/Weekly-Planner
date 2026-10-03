@@ -368,7 +368,7 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
         <button
           type="button"
           onClick={() => onOpenPlanModal(chapter, primaryActionActivity)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/50 border border-indigo-200/80 dark:border-indigo-800/70 rounded-xl transition-colors min-h-[40px]"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/50 border border-indigo-200/80 dark:border-indigo-800/70 rounded-xl transition-colors min-h-[44px]"
           title="Schedule reading, notes, or revision into Weekly Plan"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -379,7 +379,7 @@ export const NcertChapterCard: React.FC<NcertChapterCardProps> = ({
         <button
           type="button"
           onClick={handlePrimaryAction}
-          className={`inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-xl transition-all shadow-xs min-h-[40px] ${
+          className={`inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-xl transition-all shadow-xs min-h-[44px] ${
             isDone
               ? 'text-teal-700 dark:text-teal-200 bg-teal-50 hover:bg-teal-600 hover:text-white dark:bg-teal-950/60 dark:hover:bg-teal-600 border border-teal-200 dark:border-teal-800'
               : 'text-white bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20'

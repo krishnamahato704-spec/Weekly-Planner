@@ -64,7 +64,7 @@ export const NcertRevisionHistoryModal: React.FC<NcertRevisionHistoryModalProps>
       aria-labelledby="revision-history-title"
     >
       <div
-        className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 flex flex-col max-h-[85vh] overflow-hidden"
+        className="modal-panel overflow-y-auto w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 flex flex-col "
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -237,7 +237,7 @@ export const NcertRevisionHistoryModal: React.FC<NcertRevisionHistoryModalProps>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-xl transition-colors min-h-[40px]"
+            className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-xl transition-colors min-h-[44px]"
           >
             Close
           </button>

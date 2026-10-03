@@ -19,7 +19,7 @@ export const NotebookReferenceModal: React.FC<NotebookReferenceModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="modal-panel overflow-y-auto w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xl flex flex-col ">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
           <div className="flex items-center gap-2.5">
@@ -57,7 +57,7 @@ export const NotebookReferenceModal: React.FC<NotebookReferenceModalProps> = ({
 
           <div className="divide-y divide-neutral-100 dark:divide-neutral-800 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden bg-neutral-50/50 dark:bg-neutral-900/50">
             {HANDWRITTEN_NOTEBOOK_TASKS.map((item, idx) => (
-              <div key={idx} className="p-3.5 flex items-start justify-between gap-3 hover:bg-white dark:hover:bg-neutral-800/40 transition-colors">
+              <div key={idx} className="p-3.5 flex flex-col sm:flex-row items-start justify-between gap-3 hover:bg-white dark:hover:bg-neutral-800/40 transition-colors">
                 <div className="flex items-start gap-3">
                   <span className="text-xs font-mono text-neutral-400 mt-0.5 tabular-nums">
                     0{idx + 1}.
@@ -93,12 +93,12 @@ export const NotebookReferenceModal: React.FC<NotebookReferenceModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between shrink-0 bg-neutral-50 dark:bg-neutral-900">
+        <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 bg-neutral-50 dark:bg-neutral-900">
           <span className="text-xs text-neutral-500 dark:text-neutral-400">
             Target: <strong>{activeWeekTitle}</strong>
           </span>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               onClick={onClose}
               className="px-3.5 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-lg transition-colors"

@@ -109,7 +109,7 @@ export const NewWeekModal: React.FC<NewWeekModalProps> = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-xl bg-white dark:bg-[#0F1420] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="modal-panel overflow-y-auto w-full max-w-xl bg-white dark:bg-[#0F1420] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-2xl flex flex-col ">
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
           <div className="flex items-center gap-2.5">
@@ -269,9 +269,8 @@ export const NewWeekModal: React.FC<NewWeekModalProps> = ({
                     {previousWeekTasks.map((task) => {
                       const isSelected = selectedTaskIds.includes(task.id);
                       return (
-                        <div
+                        <label
                           key={task.id}
-                          onClick={() => toggleTaskSelection(task.id)}
                           className={`flex items-start gap-2.5 p-2 rounded-xl text-xs cursor-pointer transition-colors border ${
                             isSelected
                               ? 'bg-white dark:bg-slate-800 border-indigo-300 dark:border-indigo-800 text-slate-900 dark:text-white font-medium shadow-2xs'
@@ -281,18 +280,18 @@ export const NewWeekModal: React.FC<NewWeekModalProps> = ({
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => {}}
+                            onChange={() => toggleTaskSelection(task.id)}
                             className="mt-0.5 w-3.5 h-3.5 text-indigo-600 rounded border-slate-300"
                           />
-                          <div className="flex-1 min-w-0">
-                            <span className="truncate block">{task.title}</span>
-                            <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
+                          <span className="flex-1 min-w-0">
+                            <span className="block">{task.title}</span>
+                            <span className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
                               <span>{task.category}</span>
                               <span>·</span>
                               <span>{task.priority} Priority</span>
-                            </div>
-                          </div>
-                        </div>
+                            </span>
+                          </span>
+                        </label>
                       );
                     })}
                   </div>
@@ -302,7 +301,7 @@ export const NewWeekModal: React.FC<NewWeekModalProps> = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}

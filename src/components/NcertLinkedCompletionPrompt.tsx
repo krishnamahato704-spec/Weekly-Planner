@@ -40,7 +40,7 @@ export const NcertLinkedCompletionPrompt: React.FC<NcertLinkedCompletionPromptPr
       aria-labelledby="ncert-sync-title"
     >
       <div
-        className="w-full max-w-md bg-white dark:bg-slate-900 border-2 border-indigo-500/80 dark:border-indigo-400 rounded-2xl shadow-2xl p-4 sm:p-5 space-y-4 animate-in slide-in-from-bottom-5 duration-200"
+        className="modal-panel overflow-y-auto w-full max-w-md bg-white dark:bg-slate-900 border-2 border-indigo-500/80 dark:border-indigo-400 rounded-2xl shadow-2xl p-4 sm:p-5 space-y-4 animate-in slide-in-from-bottom-5 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
@@ -99,7 +99,7 @@ export const NcertLinkedCompletionPrompt: React.FC<NcertLinkedCompletionPromptPr
         </label>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
           <button
             type="button"
             onClick={onDismiss}

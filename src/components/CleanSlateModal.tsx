@@ -17,7 +17,7 @@ export const CleanSlateModal: React.FC<CleanSlateModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div 
-        className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5"
+        className="modal-panel overflow-y-auto bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5"
         role="dialog"
         aria-modal="true"
       >
@@ -88,7 +88,7 @@ export const CleanSlateModal: React.FC<CleanSlateModalProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-2">
+        <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
           <button
             type="button"
             onClick={onClose}

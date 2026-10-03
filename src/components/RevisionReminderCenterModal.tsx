@@ -55,7 +55,7 @@ export const RevisionReminderCenterModal: React.FC<RevisionReminderCenterModalPr
       aria-modal="true"
     >
       <div
-        className="w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 space-y-4 max-h-[90vh] flex flex-col"
+        className="modal-panel overflow-y-auto w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 space-y-4 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header */}
@@ -115,7 +115,7 @@ export const RevisionReminderCenterModal: React.FC<RevisionReminderCenterModalPr
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1">
           {activeTab === 'due' ? (
             dueRevisions.length === 0 ? (
               <div className="text-center py-12 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30">
@@ -327,7 +327,7 @@ export const RevisionReminderCenterModal: React.FC<RevisionReminderCenterModalPr
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors min-h-[38px]"
+            className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors min-h-[44px]"
           >
             Close
           </button>

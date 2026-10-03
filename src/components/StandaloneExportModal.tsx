@@ -39,7 +39,7 @@ export const StandaloneExportModal: React.FC<StandaloneExportModalProps> = ({ is
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="modal-panel overflow-y-auto w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xl flex flex-col ">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
           <div className="flex items-center gap-2.5">
@@ -70,14 +70,14 @@ export const StandaloneExportModal: React.FC<StandaloneExportModalProps> = ({ is
           </p>
 
           <div className="relative rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-950 p-4 font-mono text-xs text-neutral-300 max-h-72 overflow-y-auto">
-            <pre><code>{htmlContent.slice(0, 1500)}...
+            <pre className="whitespace-pre-wrap break-words"><code>{htmlContent.slice(0, 1500)}...
 
 {`<!-- [Full code with embedded Chart.js, Confetti, Tailwind, and LocalStorage logic] -->`}</code></pre>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between shrink-0 bg-neutral-50 dark:bg-neutral-900">
+        <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3 shrink-0 bg-neutral-50 dark:bg-neutral-900">
           <span className="text-xs text-neutral-500 dark:text-neutral-400">
             Self-contained file ~ 18 KB
           </span>

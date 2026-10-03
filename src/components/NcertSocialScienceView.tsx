@@ -468,7 +468,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
 
         <div className="relative z-10 space-y-6">
           {/* Header row */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-500/25 shrink-0">
                 <BookOpen size={22} aria-hidden="true" />
@@ -502,7 +502,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
           </div>
 
           {/* Metric cards grid: P1.6 Top 4 Primary Metrics */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="compact-card-grid">
             {/* 1. OVERALL NCERT PROGRESS */}
             <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-slate-50 to-teal-500/10 dark:from-indigo-950/40 dark:via-slate-800/40 dark:to-teal-950/40 border border-indigo-200/60 dark:border-indigo-800/50 flex flex-col justify-between">
               <div className="flex items-center justify-between">
@@ -659,7 +659,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                 Click any class to view
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+            <div className="class-progress-grid">
               {NCERT_CLASSES_DATA.map((cls) => {
                 const stat = classStats[cls.classNum];
                 const isSelected = selectedClassNum === cls.classNum;
@@ -746,8 +746,14 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
           )}
         </div>
 
-        {/* Horizontal Sub-Section Tabs (Identical to other academic tracks) */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="md:hidden">
+          <label className="field-label" htmlFor="ncert-class-selector">Class</label>
+          <select id="ncert-class-selector" className="field" value={selectedClassNum} onChange={event => handleSelectClass(event.target.value === 'all' ? 'all' : Number(event.target.value))}>
+            {NCERT_CLASSES_DATA.map(cls => <option key={cls.classNum} value={cls.classNum}>{cls.className}</option>)}
+            <option value="all">All Classes Directory</option>
+          </select>
+        </div>
+        <div className="hidden md:flex items-center gap-2 flex-wrap pb-1">
           {NCERT_CLASSES_DATA.map((cls) => {
             const stat = classStats[cls.classNum];
             const isSelected = selectedClassNum === cls.classNum;
@@ -755,7 +761,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
               <button
                 key={cls.classNum}
                 onClick={() => handleSelectClass(cls.classNum)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 border ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2  shrink-0 border ${
                   isSelected
                     ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-500/25 ring-2 ring-indigo-500/30 font-bold'
                     : 'bg-slate-100/90 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border-slate-200/60 dark:border-slate-700/60'
@@ -783,7 +789,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
           {/* All Classes Overview Tab */}
           <button
             onClick={() => handleSelectClass('all')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 border ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5  shrink-0 border ${
               selectedClassNum === 'all'
                 ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-500/25 ring-2 ring-indigo-500/30 font-bold'
                 : 'bg-slate-100/90 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border-slate-200/60 dark:border-slate-700/60'
@@ -808,7 +814,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
       {/* 3. FILTERS & SEARCH TOOLBAR                                           */}
       {/* ===================================================================== */}
       <div className="surface p-4 sm:p-5 space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="chapter-row">
           {/* Search bar */}
           <div className="relative flex-1 max-w-md">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -847,7 +853,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        <div className="flex items-center gap-2 flex-wrap pb-1 text-xs">
           <span className="text-slate-400 font-semibold shrink-0 flex items-center gap-1 mr-1">
             <Filter className="w-3.5 h-3.5" /> Filter:
           </span>
@@ -866,7 +872,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
               <button
                 key={flt.id}
                 onClick={() => setFilterStatus(flt.id as FilterStatus)}
-                className={`px-3 py-1 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                className={`px-3 py-1 rounded-lg font-semibold transition-all  ${
                   isSelected
                     ? 'bg-indigo-600 text-white shadow-xs'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -898,14 +904,14 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
               </div>
               <button
                 onClick={() => setDirectoryViewMode('flat')}
-                className="px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors whitespace-nowrap self-start sm:self-auto shadow-2xs"
+                className="px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors  self-start sm:self-auto shadow-2xs"
               >
                 View Full Continuous Scroll
               </button>
             </div>
 
             {/* Class Directory Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            <div className="card-grid sm:gap-5">
               {NCERT_CLASSES_DATA.map((cls) => {
                 const stat = classStats[cls.classNum];
                 const classSubjects = Array.from(new Set(cls.books.map((b) => b.subject)));
@@ -1036,7 +1042,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                   {/* Class Sub-Section Hero Header */}
                   {isSingleClassView ? (
                     <div className="bg-gradient-to-r from-indigo-50/70 via-slate-50 to-teal-50/50 dark:from-indigo-950/30 dark:via-slate-900/60 dark:to-teal-950/30 rounded-3xl p-5 sm:p-6 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs space-y-4">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800/70">
@@ -1077,13 +1083,13 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
 
                       {/* Subject Filter Sub-Tabs for this Class */}
                       <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+                        <div className="flex items-center gap-1.5 flex-wrap pb-1  text-xs">
                           <span className="text-slate-400 font-semibold text-[11px] shrink-0 mr-1 flex items-center gap-1">
                             <BookOpen className="w-3.5 h-3.5 text-indigo-500" /> Focus Subject:
                           </span>
                           <button
                             onClick={() => setSelectedSubject('all')}
-                            className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap border ${
+                            className={`px-3 py-1.5 rounded-xl font-semibold transition-all  border ${
                               selectedSubject === 'all'
                                 ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
                                 : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border-slate-200/80 dark:border-slate-700/80'
@@ -1103,7 +1109,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                               <button
                                 key={subj}
                                 onClick={() => setSelectedSubject(subj)}
-                                className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 border ${
+                                className={`px-3 py-1.5 rounded-xl font-semibold transition-all  flex items-center gap-1.5 border ${
                                   isSubjSelected
                                     ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
                                     : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border-slate-200/80 dark:border-slate-700/80'
@@ -1227,7 +1233,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                         {/* BOOK ACCORDION HEADER */}
                         <div
                           onClick={() => toggleBook(book.id)}
-                          className="p-4 sm:p-5 cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
+                          className="p-4 sm:p-5 cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors flex flex-col xl:flex-row xl:items-center justify-between gap-4"
                         >
                           <div className="flex items-start gap-3.5 min-w-0">
                             <button
@@ -1314,7 +1320,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                               return (
                                 <div
                                   key={ch.id}
-                                  className={`p-3 sm:p-3.5 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+                                  className={`p-3 sm:p-3.5 rounded-xl border transition-all chapter-row ${
                                     isChComp
                                       ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200/90 dark:border-emerald-800/60 shadow-2xs'
                                       : 'bg-white dark:bg-slate-800/80 border-slate-200/70 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600'
@@ -1344,7 +1350,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                                   </div>
 
                                   {/* Middle: 3 INDEPENDENT CHECKBOX CONTROLS */}
-                                  <div className="flex items-center gap-3 sm:gap-4 shrink-0 bg-slate-50 dark:bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                                  <div className="chapter-controls bg-slate-50 dark:bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                                     {/* 1. Reading */}
                                     <label className="flex items-center gap-1.5 cursor-pointer select-none group">
                                       <input
@@ -1424,7 +1430,7 @@ export const NcertSocialScienceView: React.FC<NcertSocialScienceViewProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => handleOpenAddModal(flatCh)}
-                                      className="px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-white hover:bg-indigo-600 dark:hover:bg-indigo-600 rounded-lg border border-indigo-200 dark:border-indigo-800/80 transition-colors flex items-center gap-1 shadow-2xs whitespace-nowrap"
+                                      className="px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-white hover:bg-indigo-600 dark:hover:bg-indigo-600 rounded-lg border border-indigo-200 dark:border-indigo-800/80 transition-colors flex items-center gap-1 shadow-2xs "
                                       title="Schedule reading, notes, or revision into current weekly plan"
                                     >
                                       <Plus className="w-3.5 h-3.5" />

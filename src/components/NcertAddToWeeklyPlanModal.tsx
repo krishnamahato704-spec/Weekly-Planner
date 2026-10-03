@@ -157,7 +157,7 @@ export const NcertAddToWeeklyPlanModal: React.FC<NcertAddToWeeklyPlanModalProps>
       aria-labelledby="plan-ncert-task-title"
     >
       <div
-        className="w-full sm:max-w-lg bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 max-h-[92vh] overflow-y-auto"
+        className="modal-panel overflow-y-auto w-full sm:max-w-lg bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

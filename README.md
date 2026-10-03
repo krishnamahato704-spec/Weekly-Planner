@@ -28,3 +28,5 @@ For production, build first and run `bun run start` with `NODE_ENV=production`. 
 See [the performance review](docs/PERFORMANCE_REVIEW.md) for the refactor, measurements, and validation limits.
 
 See [the design system](docs/DESIGN_SYSTEM.md) for layout rules, shared CSS classes, reusable components, and interface validation.
+
+See [the responsive review](docs/RESPONSIVE_REVIEW.md) for mobile, tablet, desktop, and landscape layout changes and validation.

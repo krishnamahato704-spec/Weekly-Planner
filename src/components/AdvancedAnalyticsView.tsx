@@ -27,7 +27,7 @@ export function AdvancedAnalyticsView({ weeks, ncertProgress }: AdvancedAnalytic
         <p className="text-xs text-muted mt-1">Completed tasks in each weekly plan.</p>
         <div className="mt-6 space-y-6">
           {stats.summaries.map(({ week, total, completed, percentage }) => <div key={week.id}>
-            <div className="flex items-start justify-between gap-4 text-xs mb-3"><span className="font-medium">{week.title}</span><span className="text-muted tabular-nums whitespace-nowrap">{completed} / {total}<strong className="ml-3 text-indigo-600 dark:text-indigo-300">{percentage}%</strong></span></div>
+            <div className="flex flex-wrap items-start justify-between gap-2 text-xs mb-3"><span className="min-w-0 flex-1 basis-40 font-medium">{week.title}</span><span className="shrink-0 text-muted tabular-nums">{completed} / {total}<strong className="ml-3 text-indigo-600 dark:text-indigo-300">{percentage}%</strong></span></div>
             <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden" role="img" aria-label={`${week.title}: ${percentage}% complete`}><div className="h-full rounded-full bg-indigo-600 dark:bg-indigo-400 transition-[width] duration-300" style={{ width: `${percentage}%` }} /></div>
           </div>)}
           {weeks.length === 0 && <p className="text-sm text-muted">Create a weekly plan to start tracking progress.</p>}
@@ -40,7 +40,7 @@ export function AdvancedAnalyticsView({ weeks, ncertProgress }: AdvancedAnalytic
           {categories.map(([category, counts]) => {
             const percentage = counts.total ? Math.round(counts.completed / counts.total * 100) : 0;
             return <div key={category}>
-              <div className="flex justify-between gap-4 text-xs mb-3"><span className="font-medium">{category}</span><span className="text-muted tabular-nums">{counts.completed} / {counts.total}<strong className="ml-3 text-indigo-600 dark:text-indigo-300">{percentage}%</strong></span></div>
+              <div className="flex flex-wrap justify-between gap-2 text-xs mb-3"><span className="min-w-0 flex-1 basis-40 font-medium">{category}</span><span className="shrink-0 text-muted tabular-nums">{counts.completed} / {counts.total}<strong className="ml-3 text-indigo-600 dark:text-indigo-300">{percentage}%</strong></span></div>
               <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden" role="img" aria-label={`${category}: ${percentage}% complete`}><div className="h-full rounded-full bg-indigo-600 dark:bg-indigo-400 transition-[width] duration-300" style={{ width: `${percentage}%` }} /></div>
             </div>;
           })}

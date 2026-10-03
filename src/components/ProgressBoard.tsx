@@ -210,7 +210,7 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="card-grid gap-4">
           {sortedSummariesDesc.map(({ week, total: tot, completed: comp, remaining: unfin, percentage: pct }) => {
 
             return (
@@ -300,7 +300,7 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
       {/* Week Inspector Modal */}
       {inspectingWeek && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="surface w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="modal-panel surface w-full max-w-2xl overflow-y-auto flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
               <div>
@@ -321,7 +321,7 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
             </div>
 
             {/* Task list in past week */}
-            <div className="p-6 overflow-y-auto space-y-3">
+            <div className="p-4 sm:p-6 min-h-0 overflow-y-auto space-y-3">
               {inspectingWeek.focusGoal && (
                 <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-xs text-slate-700 dark:text-slate-300">
                   <strong className="text-slate-900 dark:text-white">Focus Goal:</strong> {inspectingWeek.focusGoal}
@@ -332,7 +332,7 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
                 {inspectingWeek.tasks.map((task) => (
                   <div
                     key={task.id}
-                    className="p-3.5 flex items-start justify-between gap-3 bg-white dark:bg-slate-900"
+                    className="p-3.5 flex flex-col sm:flex-row items-start justify-between gap-3 bg-white dark:bg-slate-900"
                   >
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5">
@@ -357,7 +357,7 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
                             {task.notes}
                           </p>
                         )}
-                        <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-1">
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400 mt-1">
                           <span>{task.category}</span>
                           <span aria-hidden="true">·</span>
                           <span
@@ -391,7 +391,7 @@ export const ProgressBoard: React.FC<ProgressBoardProps> = ({
 
             {/* Modal Actions */}
             <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2 shrink-0 bg-slate-50 dark:bg-slate-900">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => {
                     onSelectWeekToView(inspectingWeek.id);
