@@ -876,4 +876,3 @@ export function getAllFlatChapters(): NcertFlatChapter[] {
   // Chapter metadata is static. Give callers their own array without rebuilding every chapter.
   return ALL_NCERT_CHAPTERS.slice();
 }
-

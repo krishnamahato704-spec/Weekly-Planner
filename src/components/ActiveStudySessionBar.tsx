@@ -55,7 +55,7 @@ export const ActiveStudySessionBar: React.FC<ActiveStudySessionBarProps> = ({
                 : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-xs shadow-emerald-500/20'
             }`}
           >
-            <Clock className={`w-4 h-4 ${!activeSession.isPaused ? 'animate-pulse' : ''}`} />
+            <Clock aria-hidden="true" className={`w-4 h-4 ${!activeSession.isPaused ? 'animate-pulse' : ''}`} />
           </div>
 
           <div className="min-w-0 flex-1">
@@ -65,7 +65,7 @@ export const ActiveStudySessionBar: React.FC<ActiveStudySessionBarProps> = ({
                   activeSession.isPaused ? 'bg-amber-400' : 'bg-emerald-400 animate-ping'
                 }`}
               />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
                 {activeSession.isPaused ? 'Paused' : 'Studying Now'}
               </span>
             </div>
@@ -92,7 +92,7 @@ export const ActiveStudySessionBar: React.FC<ActiveStudySessionBarProps> = ({
               title="Resume study timer"
               aria-label="Resume study session"
             >
-              <Play className="w-4 h-4 fill-white" />
+              <Play aria-hidden="true" className="w-4 h-4 fill-white" />
             </button>
           ) : (
             <button
@@ -102,7 +102,7 @@ export const ActiveStudySessionBar: React.FC<ActiveStudySessionBarProps> = ({
               title="Pause study timer"
               aria-label="Pause study session"
             >
-              <Pause className="w-4 h-4" />
+              <Pause aria-hidden="true" className="w-4 h-4" />
             </button>
           )}
 
@@ -113,7 +113,7 @@ export const ActiveStudySessionBar: React.FC<ActiveStudySessionBarProps> = ({
             title="Finish session and save time"
             aria-label="Finish study session"
           >
-            <Square className="w-3.5 h-3.5 fill-white" />
+            <Square aria-hidden="true" className="w-3.5 h-3.5 fill-white" />
             <span>Finish</span>
           </button>
 
@@ -124,7 +124,7 @@ export const ActiveStudySessionBar: React.FC<ActiveStudySessionBarProps> = ({
             title="Cancel session without saving"
             aria-label="Discard session"
           >
-            <X className="w-4 h-4" />
+            <X aria-hidden="true" className="w-4 h-4" />
           </button>
         </div>
       </div>

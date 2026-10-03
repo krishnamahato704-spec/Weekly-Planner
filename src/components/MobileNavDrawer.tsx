@@ -62,23 +62,23 @@ export function MobileNavDrawer({ isOpen, onClose, isDarkMode, onToggleDarkMode,
   onOpenRemindersCenter, ...navigation }: MobileNavDrawerProps) {
   const closeThen = (action: () => void) => () => { onClose(); action(); };
   return <Dialog isOpen={isOpen} onClose={onClose} label="Mobile Navigation Menu" className="navigation-dialog">
-    <div className="flex items-center justify-between gap-2 mb-8">
-      <Brand />
-      <button type="button" className="icon-button" onClick={onClose} aria-label="Close navigation menu"><X size={20} /></button>
-    </div>
-    <NavigationContent {...navigation}
-      onSelectDestination={destination => { onClose(); navigation.onSelectDestination(destination); }}
-      onOpenUploadScanModal={closeThen(navigation.onOpenUploadScanModal)}
-      onOpenNotebookModal={closeThen(navigation.onOpenNotebookModal)}
-      onOpenExportModal={closeThen(navigation.onOpenExportModal)}
-      onOpenBackupModal={navigation.onOpenBackupModal && closeThen(navigation.onOpenBackupModal)} />
-    <div className="mt-auto pt-8 space-y-1">
-      {onOpenRemindersCenter && <button type="button" className="nav-item" onClick={closeThen(onOpenRemindersCenter)}>
-        <RotateCcw size={18} /><span className="flex-1">Revision Reminders</span>{dueRevisionsCount > 0 && <span className="nav-badge">{dueRevisionsCount}</span>}
-      </button>}
-      <button type="button" className="nav-item" onClick={onToggleDarkMode}>
-        {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}<span>{isDarkMode ? 'Day Mode (Light)' : 'Night Mode (Dark)'}</span>
-      </button>
-    </div>
-  </Dialog>;
+  <div className="flex items-center justify-between gap-2 mb-8">
+    <Brand />
+    <button type="button" className="icon-button" onClick={onClose} aria-label="Close navigation menu"><X aria-hidden="true" size={20} /></button>
+  </div>
+  <NavigationContent {...navigation}
+    onSelectDestination={destination => { onClose(); navigation.onSelectDestination(destination); }}
+    onOpenUploadScanModal={closeThen(navigation.onOpenUploadScanModal)}
+    onOpenNotebookModal={closeThen(navigation.onOpenNotebookModal)}
+    onOpenExportModal={closeThen(navigation.onOpenExportModal)}
+    onOpenBackupModal={navigation.onOpenBackupModal && closeThen(navigation.onOpenBackupModal)} />
+  <div className="mt-auto pt-8 space-y-1">
+    {onOpenRemindersCenter && <button type="button" className="nav-item" onClick={closeThen(onOpenRemindersCenter)}>
+      <RotateCcw aria-hidden="true" size={18} /><span className="flex-1">Revision Reminders</span>{dueRevisionsCount > 0 && <span className="nav-badge">{dueRevisionsCount}</span>}
+    </button>}
+    <button type="button" className="nav-item" onClick={onToggleDarkMode}>
+      {isDarkMode ? <Sun aria-hidden="true" size={18} /> : <Moon aria-hidden="true" size={18} />}<span>{isDarkMode ? 'Day Mode (Light)' : 'Night Mode (Dark)'}</span>
+    </button>
+  </div>
+</Dialog>;
 }

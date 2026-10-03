@@ -1,4 +1,7 @@
-import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
+
+let openDialogs = 0;
+let previousBodyOverflow = '';
 
 export function Dialog({ isOpen, onClose, label, labelledBy, className = '', children }: {
   isOpen: boolean;
@@ -12,18 +15,18 @@ export function Dialog({ isOpen, onClose, label, labelledBy, className = '', chi
   const onCloseRef = useRef(onClose);
   useLayoutEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isOpen) return;
     const dialog = dialogRef.current;
     if (!dialog) return;
     const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const previousOverflow = document.body.style.overflow;
+    if (openDialogs++ === 0) previousBodyOverflow = document.body.style.overflow;
     dialog.showModal();
     dialog.querySelector<HTMLElement>('[data-initial-focus]')?.focus({ preventScroll: true });
     document.body.style.overflow = 'hidden';
     return () => {
       dialog.close();
-      document.body.style.overflow = previousOverflow;
+      if (--openDialogs === 0) document.body.style.overflow = previousBodyOverflow;
       if (trigger?.isConnected) trigger.focus({ preventScroll: true });
     };
   }, [isOpen]);
@@ -36,10 +39,11 @@ export function Dialog({ isOpen, onClose, label, labelledBy, className = '', chi
       onKeyDown={event => {
         if (event.key !== 'Tab') return;
         const controls = [...event.currentTarget.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])')]
-          .filter(control => !control.hasAttribute('disabled') && control.getClientRects().length > 0);
+          .filter(control => !control.hasAttribute('disabled') && control.tabIndex >= 0 && control.getClientRects().length > 0);
         const first = controls[0];
         const last = controls.at(-1);
-        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        if (!first) { event.preventDefault(); event.currentTarget.focus(); }
+        else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
       }}
       onClick={event => {

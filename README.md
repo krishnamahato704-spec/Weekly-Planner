@@ -30,3 +30,16 @@ See [the performance review](docs/PERFORMANCE_REVIEW.md) for the refactor, measu
 See [the design system](docs/DESIGN_SYSTEM.md) for layout rules, shared CSS classes, reusable components, and interface validation.
 
 See [the responsive review](docs/RESPONSIVE_REVIEW.md) for mobile, tablet, desktop, and landscape layout changes and validation.
+
+See [the accessibility and SEO review](docs/ACCESSIBILITY_REVIEW.md) for keyboard behavior, labels, contrast, page metadata, and validation limits.
+
+## Public deployment build
+
+The public origin is configured in `site.config.ts`; set `VITE_SITE_URL` when deploying at another HTTPS origin. Use Node 24 LTS or another version supported by Vite.
+
+```sh
+bun run build:site
+bun run test:site
+```
+
+This produces a Cloudflare-compatible Worker at `dist/server/index.js` with the client assets embedded. Keep the normal `build` and `start` commands for Express hosting. Both runtimes use the same optional Gemini transcription parser.

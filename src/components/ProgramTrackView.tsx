@@ -1,3 +1,4 @@
+import { Dialog } from './ui/Dialog';
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ProgramTab, 
@@ -41,6 +42,8 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
   onTriggerConfetti,
   onFinishTaskAlert,
 }) => {
+  const fieldId = React.useId();
+  const dialogTitleId = React.useId();
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(
     program.subjects && program.subjects.length > 0 ? program.subjects[0].id : ''
   );
@@ -407,7 +410,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                             task.notes
                           )
                         }
-                        className="text-[11px] text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold transition-colors"
+                        className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 font-semibold transition-colors"
                         title="Add this milestone into active Weekly Plan"
                       >
                         + Weekly Plan
@@ -420,7 +423,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }`}
                       >
-                        <Check className="w-3 h-3" />
+                        <Check aria-hidden="true" className="w-3 h-3" />
                         <span>{isFinished ? 'Finished ✓' : 'Finish'}</span>
                       </button>
                     </div>
@@ -449,7 +452,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
               onClick={() => setIsAddingSubject(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shrink-0"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus aria-hidden="true" className="w-3.5 h-3.5" />
               <span>Add Subject</span>
             </button>
           </div>
@@ -512,7 +515,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                   onClick={() => setIsAddingChapter(true)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-slate-950 hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-white rounded-lg transition-colors shrink-0"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus aria-hidden="true" className="w-3.5 h-3.5" />
                   <span>Add Chapter</span>
                 </button>
               </div>
@@ -523,14 +526,14 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                   onSubmit={(e) => handleAddChapterSubmit(e, activeSubject.id)}
                   className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-2.5 animate-in fade-in"
                 >
-                  <input
+                  <><label className="sr-only" htmlFor={`${fieldId}-field-1`}>Chapter Title</label><input id={`${fieldId}-field-1`}
                     type="text"
                     required
                     value={newChapterTitle}
                     onChange={(e) => setNewChapterTitle(e.target.value)}
                     placeholder={`Enter Chapter ${activeSubject.chapters.length + 1} topic title...`}
                     className="min-w-0 flex-1 px-3 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                  />
+                  /></>
                   <button
                     type="submit"
                     className="px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
@@ -540,7 +543,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsAddingChapter(false)}
-                    className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                    className="px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                   >
                     Cancel
                   </button>
@@ -595,7 +598,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                               : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 hover:border-slate-400'
                           }`}
                         >
-                          <input
+                          <input aria-label={`Reading and notes: ${chap.title}`}
                             type="checkbox"
                             checked={chap.readingNotes}
                             onChange={() => handleToggleChecklist(activeSubject.id, chap.id, 'readingNotes')}
@@ -612,7 +615,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                               : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 hover:border-slate-400'
                           }`}
                         >
-                          <input
+                          <input aria-label={`Deep study: ${chap.title}`}
                             type="checkbox"
                             checked={chap.deepStudy}
                             onChange={() => handleToggleChecklist(activeSubject.id, chap.id, 'deepStudy')}
@@ -629,7 +632,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                               : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 hover:border-slate-400'
                           }`}
                         >
-                          <input
+                          <input aria-label={`Revision: ${chap.title}`}
                             type="checkbox"
                             checked={chap.revision}
                             onChange={() => handleToggleChecklist(activeSubject.id, chap.id, 'revision')}
@@ -650,7 +653,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                           className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                           title="Schedule this chapter into active Weekly Plan"
                         >
-                          <Calendar className="w-3.5 h-3.5" />
+                          <Calendar aria-hidden="true" className="w-3.5 h-3.5" />
                         </button>
 
                         {/* Finish Task Button */}
@@ -662,7 +665,7 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-600 hover:text-white'
                           }`}
                         >
-                          <Check className="w-3 h-3" />
+                          <Check aria-hidden="true" className="w-3 h-3" />
                           <span>{isFullyFinished ? 'Finished ✓' : 'Finish'}</span>
                         </button>
                       </div>
@@ -675,55 +678,53 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
 
           {/* Add Subject Modal */}
           {isAddingSubject && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-              <div className="modal-panel overflow-y-auto surface w-full max-w-md p-6 space-y-4">
-                <h3 className="text-base font-bold text-slate-950 dark:text-white">
-                  Add Subject to {program.title}
-                </h3>
-                <form onSubmit={handleAddSubjectSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Subject Code (Optional, e.g. MHI 112)
-                    </label>
-                    <input
-                      type="text"
-                      value={newSubjectCode}
-                      onChange={(e) => setNewSubjectCode(e.target.value)}
-                      placeholder="e.g. MHI 112"
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                      Subject Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newSubjectName}
-                      onChange={(e) => setNewSubjectName(e.target.value)}
-                      placeholder="e.g. Modern Historiography"
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                    />
-                  </div>
-                  <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-                    <button
-                      type="button"
-                      onClick={() => setIsAddingSubject(false)}
-                      className="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow-sm"
-                    >
-                      Add Subject
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
+            <Dialog isOpen={isAddingSubject} onClose={() => setIsAddingSubject(false)} labelledBy={dialogTitleId} className="modal-panel overflow-y-auto surface w-full max-w-md p-6 space-y-4">
+              <h2 id={dialogTitleId} className="text-base font-bold text-slate-950 dark:text-white">
+                Add Subject to {program.title}
+              </h2>
+              <form onSubmit={handleAddSubjectSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor={`${fieldId}-field-2`} className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                    Subject Code (Optional, e.g. MHI 112)
+                  </label>
+                  <input id={`${fieldId}-field-2`}
+                    type="text"
+                    value={newSubjectCode}
+                    onChange={(e) => setNewSubjectCode(e.target.value)}
+                    placeholder="e.g. MHI 112"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  />
+                </div>
+                <div>
+                  <label htmlFor={`${fieldId}-field-3`} className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                    Subject Name *
+                  </label>
+                  <input id={`${fieldId}-field-3`}
+                    type="text"
+                    required
+                    value={newSubjectName}
+                    onChange={(e) => setNewSubjectName(e.target.value)}
+                    placeholder="e.g. Modern Historiography"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingSubject(false)}
+                    className="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow-sm"
+                  >
+                    Add Subject
+                  </button>
+                </div>
+              </form>
+            </Dialog>
           )}
         </div>
       )}

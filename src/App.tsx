@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useCallback, useState, useEffect, useMemo } from 'react';
+import React, { lazy, Suspense, useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import { useTimeout } from './hooks/useTimeout';
 import { updateTaskInWeeks } from './utils/taskUtils';
 import {
@@ -676,6 +676,17 @@ export default function App() {
     return 'weekly_planning';
   }, [mainTab, progressSubView]);
 
+  const viewName = mainTab === 'academic_tracks' && academicSubView === 'audit' ? 'Academic Audit' : {
+    weekly_planning: 'Weekly Planning', calendar: 'Study Calendar', academic_tracks: 'Academic Tracks',
+    ncert: 'NCERT Study Tracker', analytics: 'Progress Analytics', velocity: 'Weekly History', audit: 'Academic Audit',
+  }[currentNavSection];
+  const previousView = useRef(viewName);
+  useEffect(() => {
+    document.title = `${viewName} | WeeklyPlan`;
+    if (previousView.current !== viewName) document.getElementById('main-content')?.focus({ preventScroll: true });
+    previousView.current = viewName;
+  }, [viewName]);
+
   return (
     <div className="app-shell">
       <a href="#main-content" className="skip-link">Skip to content</a>
@@ -711,8 +722,8 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main id="main-content" tabIndex={-1} className="app-main space-y-6">
-        <Suspense fallback={<div role="status" className="p-6 text-center text-slate-500">Loading view…</div>}>
+      <main id="main-content" tabIndex={-1} aria-label={viewName} className="app-main space-y-6">
+        <Suspense fallback={<div role="status" className="p-6 text-center text-slate-500 dark:text-slate-400">Loading view…</div>}>
         {/* ======================================================== */}
         {/* TAB 1: WEEKLY PLANNING VIEW (Primary Dashboard)         */}
         {/* ======================================================== */}
@@ -803,6 +814,7 @@ export default function App() {
               />
             ) : (
               <DashboardReportView
+                headingLevel={2}
                 weeks={weeks}
                 programs={programs}
                 onSelectTab={(progId) => {

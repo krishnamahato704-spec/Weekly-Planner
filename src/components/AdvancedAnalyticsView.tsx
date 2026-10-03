@@ -16,14 +16,14 @@ export function AdvancedAnalyticsView({ weeks, ncertProgress }: AdvancedAnalytic
   return <div className="space-y-6 view-enter">
     <PageHeader eyebrow="See the bigger picture" title="Weekly Progress Analytics" description="Your progress across weekly plans, priorities, and study tracks." />
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      <StatCard label="Overall completion" value={`${rate}%`} detail={`${stats.completed} of ${stats.total} tasks finished`} icon={<CheckCircle2 size={18} />} />
-      <StatCard label="Weeks tracked" value={weeks.length} detail="Weekly plans in your workspace" icon={<CalendarDays size={18} />} />
-      <StatCard label="High priority completion" value={`${highRate}%`} detail={`${stats.highPriorityCompleted} of ${stats.highPriorityTotal} tasks finished`} icon={<Target size={18} />} />
-      <StatCard label="NCERT coverage" value={`${ncertRate}%`} detail={`${completedChapters} of ${ALL_NCERT_CHAPTERS.length} chapters complete`} icon={<BookOpen size={18} />} />
+      <StatCard label="Overall completion" value={`${rate}%`} detail={`${stats.completed} of ${stats.total} tasks finished`} icon={<CheckCircle2 aria-hidden="true" size={18} />} />
+      <StatCard label="Weeks tracked" value={weeks.length} detail="Weekly plans in your workspace" icon={<CalendarDays aria-hidden="true" size={18} />} />
+      <StatCard label="High priority completion" value={`${highRate}%`} detail={`${stats.highPriorityCompleted} of ${stats.highPriorityTotal} tasks finished`} icon={<Target aria-hidden="true" size={18} />} />
+      <StatCard label="NCERT coverage" value={`${ncertRate}%`} detail={`${completedChapters} of ${ALL_NCERT_CHAPTERS.length} chapters complete`} icon={<BookOpen aria-hidden="true" size={18} />} />
     </div>
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
       <section className="surface p-6" aria-labelledby="completion-trend-heading">
-        <div className="flex items-center justify-between gap-3"><h2 id="completion-trend-heading" className="section-title">Week by week</h2><TrendingUp className="text-muted" size={18} /></div>
+        <div className="flex items-center justify-between gap-3"><h2 id="completion-trend-heading" className="section-title">Week by week</h2><TrendingUp aria-hidden="true" className="text-muted" size={18} /></div>
         <p className="text-xs text-muted mt-1">Completed tasks in each weekly plan.</p>
         <div className="mt-6 space-y-6">
           {stats.summaries.map(({ week, total, completed, percentage }) => <div key={week.id}>
@@ -34,7 +34,7 @@ export function AdvancedAnalyticsView({ weeks, ncertProgress }: AdvancedAnalytic
         </div>
       </section>
       <section className="surface p-6" aria-labelledby="category-heading">
-        <div className="flex items-center justify-between gap-3"><h2 id="category-heading" className="section-title">Where your time goes</h2><Layers className="text-muted" size={18} /></div>
+        <div className="flex items-center justify-between gap-3"><h2 id="category-heading" className="section-title">Where your time goes</h2><Layers aria-hidden="true" className="text-muted" size={18} /></div>
         <p className="text-xs text-muted mt-1">Task completion by category.</p>
         <div className="mt-6 space-y-6">
           {categories.map(([category, counts]) => {

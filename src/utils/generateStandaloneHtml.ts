@@ -11,6 +11,7 @@ export function generateStandaloneHtml(): string {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weekly Plan - Task & Progress Tracker</title>
+  <meta name="robots" content="noindex, nofollow" />
   <meta name="description" content="A responsive weekly task planner and analytics dashboard organized by Sunday cycles." />
   <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,6 +39,28 @@ export function generateStandaloneHtml(): string {
     }
   </script>
   <style>
+    button, input:not([type="checkbox"]), select { min-height: 44px; }
+    :focus-visible { outline: 3px solid #4f46e5 !important; outline-offset: 3px; }
+    .dark :focus-visible { outline-color: #a5b4fc !important; }
+    main, dialog { overflow-wrap: anywhere; }
+    dialog { color: inherit; margin: auto; padding: 0; border: 0; max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; }
+    dialog::backdrop { background: rgb(0 0 0 / .5); }
+    .text-neutral-400 { color: #666 !important; }
+    .dark .text-neutral-400, .dark .dark\\:text-neutral-500 { color: #b3b3b3 !important; }
+    .text-emerald-600 { color: #087953 !important; }
+    .dark .text-emerald-600 { color: #6ee7b7 !important; }
+    .bg-emerald-600 { background: #087953 !important; }
+    .dark .dark\\:bg-emerald-500 { background: #087953 !important; }
+    .text-rose-500, .text-rose-600 { color: #be123c !important; }
+    .text-amber-600 { color: #925b08 !important; }
+    dialog input, dialog select { color: #182235 !important; }
+    .dark dialog input, .dark dialog select { color: #ecf0f8 !important; }
+    .dark .text-rose-500, .dark .text-rose-600 { color: #fb7185 !important; }
+    .dark .text-amber-600 { color: #fbbf24 !important; }
+    .dark .text-blue-600 { color: #93c5fd !important; }
+    @media (max-width: 820px) { input, select { font-size: 16px !important; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .tabular-nums { font-variant-numeric: tabular-nums; }
   </style>
@@ -47,7 +70,7 @@ export function generateStandaloneHtml(): string {
   <!-- Navigation Bar -->
   <header class="sticky top-0 z-30 w-full border-b border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
+      <div class="flex flex-wrap items-center justify-between gap-3 py-3">
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
             WP
@@ -55,27 +78,27 @@ export function generateStandaloneHtml(): string {
           <span class="text-lg font-bold tracking-tight text-neutral-900 dark:text-white">WeeklyPlan</span>
         </div>
 
-        <nav class="hidden md:flex items-center gap-6">
+        <nav aria-label="Planner views" class="flex flex-wrap items-center gap-3">
           <button id="nav-current-btn" onclick="switchView('current')" class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-            <i data-lucide="check-square" class="w-4 h-4"></i>
+            <i aria-hidden="true" data-lucide="check-square" class="w-4 h-4"></i>
             <span>Current Week</span>
           </button>
           <button id="nav-history-btn" onclick="switchView('history')" class="text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white flex items-center gap-1.5">
-            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+            <i aria-hidden="true" data-lucide="bar-chart-3" class="w-4 h-4"></i>
             <span>Progress Board</span>
           </button>
           <button onclick="openNotebookModal()" class="text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white flex items-center gap-1.5">
-            <i data-lucide="book-open" class="w-4 h-4 text-emerald-500"></i>
+            <i aria-hidden="true" data-lucide="book-open" class="w-4 h-4 text-emerald-500"></i>
             <span>Handwritten Plan</span>
           </button>
         </nav>
 
         <div class="flex items-center gap-2 sm:gap-3">
           <button onclick="openNewWeekModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm">
-            <i data-lucide="plus" class="w-4 h-4"></i>
+            <i aria-hidden="true" data-lucide="plus" class="w-4 h-4"></i>
             <span>Start New Weekly Plan</span>
           </button>
-          <button onclick="toggleTheme()" class="p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg">
+          <button aria-label="Toggle light or dark theme" onclick="toggleTheme()" class="p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg">
             <i id="theme-icon" data-lucide="moon" class="w-4 h-4"></i>
           </button>
         </div>
@@ -92,7 +115,7 @@ export function generateStandaloneHtml(): string {
       <!-- Week Banner / Sunday Notice -->
       <div id="sunday-alert-banner" class="hidden p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <i data-lucide="sparkles" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+          <i aria-hidden="true" data-lucide="sparkles" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
           <p class="text-sm font-medium text-emerald-900 dark:text-emerald-100">
             <strong>Today is Sunday!</strong> Time to review last week and launch your new weekly cycle.
           </p>
@@ -119,11 +142,11 @@ export function generateStandaloneHtml(): string {
         </div>
 
         <div class="flex items-center gap-3">
-          <select id="week-selector" onchange="onSelectWeek(this.value)" class="text-xs sm:text-sm px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white">
+          <select aria-label="Select week" id="week-selector" onchange="onSelectWeek(this.value)" class="text-xs sm:text-sm px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white">
             <!-- Populated via JS -->
           </select>
           <button onclick="openTaskModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-neutral-900 dark:bg-white dark:text-neutral-900 rounded-lg shadow-sm">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <i aria-hidden="true" data-lucide="plus-circle" class="w-4 h-4"></i>
             <span>Add Task</span>
           </button>
         </div>
@@ -215,9 +238,9 @@ export function generateStandaloneHtml(): string {
 
         <!-- Quick Search -->
         <div class="relative w-full sm:w-64">
-          <i data-lucide="search" class="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <i aria-hidden="true" data-lucide="search" class="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
           <input
-            id="task-search-input"
+            aria-label="Search tasks" id="task-search-input"
             type="text"
             oninput="renderTasks()"
             placeholder="Search tasks..."
@@ -236,9 +259,9 @@ export function generateStandaloneHtml(): string {
     <!-- View 2: Progress Board (Multi-Week Analytics & History) -->
     <div id="view-history" class="hidden space-y-8">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+        <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
           Multi-Week Progress Board
-        </h2>
+        </h1>
         <p class="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
           Historical completion trends, weekly summary cards, and past task archives
         </p>
@@ -247,21 +270,21 @@ export function generateStandaloneHtml(): string {
       <!-- Chart.js Canvas Container -->
       <div class="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 space-y-4">
         <div class="flex items-center justify-between">
-          <h3 class="text-base font-semibold text-neutral-900 dark:text-white">
+          <h2 class="text-base font-semibold text-neutral-900 dark:text-white">
             Weekly Completion Percentage (%)
-          </h3>
+          </h2>
           <span class="text-xs text-neutral-500 dark:text-neutral-400">Week-over-week performance</span>
         </div>
         <div class="h-64 sm:h-80 w-full relative">
-          <canvas id="progressChart"></canvas>
+          <canvas role="img" aria-label="Weekly completion percentages. Exact values appear in the week cards below." id="progressChart"></canvas>
         </div>
       </div>
 
       <!-- Weekly Summary Cards Grid -->
       <div>
-        <h3 class="text-base font-semibold text-neutral-900 dark:text-white mb-4">
+        <h2 class="text-base font-semibold text-neutral-900 dark:text-white mb-4">
           All Sunday Week Plans
-        </h3>
+        </h2>
         <div id="weeks-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <!-- Rendered via JS -->
         </div>
@@ -271,19 +294,19 @@ export function generateStandaloneHtml(): string {
   </main>
 
   <!-- New Week Modal -->
-  <div id="new-week-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+  <dialog id="new-week-modal" aria-labelledby="new-week-modal-title" class="bg-transparent w-full max-w-lg">
     <div class="w-full max-w-lg bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xl overflow-hidden p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
-        <h3 class="text-base font-semibold text-neutral-900 dark:text-white">Start New Weekly Plan</h3>
-        <button onclick="closeNewWeekModal()" class="text-neutral-400 hover:text-neutral-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <h2 id="new-week-modal-title" class="text-base font-semibold text-neutral-900 dark:text-white">Start New Weekly Plan</h2>
+        <button aria-label="Close dialog" onclick="closeNewWeekModal()" class="text-neutral-400 hover:text-neutral-600"><i aria-hidden="true" data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form onsubmit="handleCreateNewWeek(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Sunday Start Date</label>
+          <label for="new-week-date" class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Sunday Start Date</label>
           <input id="new-week-date" type="date" required class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Weekly Focus Goal</label>
+          <label for="new-week-goal" class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Weekly Focus Goal</label>
           <input id="new-week-goal" type="text" placeholder="e.g. Master NCERT Class 7 & complete 2 chapters" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
         </div>
         <div class="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
@@ -298,25 +321,25 @@ export function generateStandaloneHtml(): string {
         </div>
       </form>
     </div>
-  </div>
+  </dialog>
 
   <!-- Task Modal (Add/Edit) -->
-  <div id="task-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+  <dialog id="task-modal" aria-labelledby="task-modal-title" class="bg-transparent w-full max-w-lg">
     <div class="w-full max-w-md bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xl overflow-hidden p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
-        <h3 id="task-modal-title" class="text-base font-semibold text-neutral-900 dark:text-white">Add New Task</h3>
-        <button onclick="closeTaskModal()" class="text-neutral-400 hover:text-neutral-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <h2 id="task-modal-title" class="text-base font-semibold text-neutral-900 dark:text-white">Add New Task</h2>
+        <button aria-label="Close dialog" onclick="closeTaskModal()" class="text-neutral-400 hover:text-neutral-600"><i aria-hidden="true" data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form onsubmit="handleSaveTask(event)" class="space-y-4">
         <input type="hidden" id="task-edit-id" value="">
         <div>
-          <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Task Title *</label>
+          <label for="task-title-input" class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Task Title *</label>
           <input id="task-title-input" type="text" required placeholder="e.g. Hindi Grammar 3 chapters" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Category</label>
-            <select id="task-category-input" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
+            <label for="task-category-input" class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Category</label>
+          <select id="task-category-input" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
               <option value="Study">Study</option>
               <option value="Exam Prep">Exam Prep</option>
               <option value="Research">Research</option>
@@ -326,8 +349,8 @@ export function generateStandaloneHtml(): string {
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Priority</label>
-            <select id="task-priority-input" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
+            <label for="task-priority-input" class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Priority</label>
+          <select id="task-priority-input" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
               <option value="High">High</option>
               <option value="Medium" selected>Medium</option>
               <option value="Low">Low</option>
@@ -335,7 +358,7 @@ export function generateStandaloneHtml(): string {
           </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Notes / Target</label>
+          <label for="task-notes-input" class="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">Notes / Target</label>
           <input id="task-notes-input" type="text" placeholder="e.g. 1 hour daily" class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800">
         </div>
         <div class="flex justify-end gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
@@ -344,14 +367,14 @@ export function generateStandaloneHtml(): string {
         </div>
       </form>
     </div>
-  </div>
+  </dialog>
 
   <!-- Notebook Modal -->
-  <div id="notebook-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+  <dialog id="notebook-modal" aria-labelledby="notebook-modal-title" class="bg-transparent w-full max-w-lg">
     <div class="w-full max-w-lg bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xl overflow-hidden p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
-        <h3 class="text-base font-semibold text-neutral-900 dark:text-white">Handwritten Notebook Transcription</h3>
-        <button onclick="closeNotebookModal()" class="text-neutral-400 hover:text-neutral-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <h2 id="notebook-modal-title" class="text-base font-semibold text-neutral-900 dark:text-white">Handwritten Notebook Transcription</h2>
+        <button aria-label="Close dialog" onclick="closeNotebookModal()" class="text-neutral-400 hover:text-neutral-600"><i aria-hidden="true" data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <p class="text-xs text-neutral-600 dark:text-neutral-400">
         Source: <em>Sunday's Tasks (1st Week -> Till 3 October)</em>
@@ -372,7 +395,7 @@ export function generateStandaloneHtml(): string {
         <button onclick="importNotebookToCurrent()" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700">Import to Active Week</button>
       </div>
     </div>
-  </div>
+  </dialog>
 
   <!-- Application Logic -->
   <script>
@@ -449,6 +472,9 @@ export function generateStandaloneHtml(): string {
     }
 
     function switchView(view) {
+      document.title = (view === 'current' ? 'Weekly Planning' : 'Weekly History') + ' | WeeklyPlan';
+      document.getElementById('nav-current-btn').setAttribute('aria-pressed', String(view === 'current'));
+      document.getElementById('nav-history-btn').setAttribute('aria-pressed', String(view !== 'current'));
       const vCurrent = document.getElementById('view-current');
       const vHistory = document.getElementById('view-history');
       const navCur = document.getElementById('nav-current-btn');
@@ -474,6 +500,7 @@ export function generateStandaloneHtml(): string {
       currentFilter = filter;
       ['all', 'remaining', 'completed'].forEach(f => {
         const btn = document.getElementById('filter-' + f);
+        btn.setAttribute('aria-pressed', String(f === filter));
         if (f === filter) {
           btn.className = 'px-3.5 py-1.5 text-xs font-semibold rounded-md bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs';
         } else {
@@ -565,7 +592,7 @@ export function generateStandaloneHtml(): string {
             <input
               type="checkbox"
               \${task.completed ? 'checked' : ''}
-              onchange="toggleTask('\${task.id}')"
+              aria-label="Toggle task completion" onchange="toggleTask('\${task.id}')"
               class="mt-1 w-4 h-4 text-emerald-600 rounded border-neutral-300 dark:border-neutral-700 focus:ring-emerald-500 cursor-pointer"
             />
             <div class="flex-1 min-w-0">
@@ -580,12 +607,12 @@ export function generateStandaloneHtml(): string {
               </div>
             </div>
           </div>
-          <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onclick="editTask('\${task.id}')" class="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded">
-              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+          <div class="flex items-center gap-1 opacity-100 transition-opacity">
+            <button aria-label="Edit task" onclick="editTask('\${task.id}')" class="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded">
+              <i aria-hidden="true" data-lucide="edit-3" class="w-3.5 h-3.5"></i>
             </button>
-            <button onclick="deleteTask('\${task.id}')" class="p-1.5 text-neutral-400 hover:text-rose-600 rounded">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            <button aria-label="Delete task" onclick="deleteTask('\${task.id}')" class="p-1.5 text-neutral-400 hover:text-rose-600 rounded">
+              <i aria-hidden="true" data-lucide="trash-2" class="w-3.5 h-3.5"></i>
             </button>
           </div>
         </div>
@@ -649,14 +676,14 @@ export function generateStandaloneHtml(): string {
         document.getElementById('task-modal-title').textContent = 'Add New Task';
       }
 
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      modal.showModal();
+      document.body.style.overflow = 'hidden';
     }
 
     function closeTaskModal() {
       const modal = document.getElementById('task-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      modal.close();
+      document.body.style.overflow = '';
     }
 
     function handleSaveTask(e) {
@@ -714,15 +741,15 @@ export function generateStandaloneHtml(): string {
       nextSun.setDate(today.getDate() + ((7 - today.getDay()) % 7 || 7));
       dateInput.value = nextSun.toISOString().split('T')[0];
 
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      modal.showModal();
+      document.body.style.overflow = 'hidden';
       lucide.createIcons();
     }
 
     function closeNewWeekModal() {
       const modal = document.getElementById('new-week-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      modal.close();
+      document.body.style.overflow = '';
     }
 
     function handleCreateNewWeek(e) {
@@ -762,14 +789,14 @@ export function generateStandaloneHtml(): string {
 
     function openNotebookModal() {
       const m = document.getElementById('notebook-modal');
-      m.classList.remove('hidden');
-      m.classList.add('flex');
+      m.showModal();
+      document.body.style.overflow = 'hidden';
     }
 
     function closeNotebookModal() {
       const m = document.getElementById('notebook-modal');
-      m.classList.add('hidden');
-      m.classList.remove('flex');
+      m.close();
+      document.body.style.overflow = '';
     }
 
     function importNotebookToCurrent() {
@@ -816,13 +843,13 @@ export function generateStandaloneHtml(): string {
         else if (pct >= 50) badgeBg = 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200 dark:border-amber-900';
 
         return \`
-          <div onclick="inspectWeek('\${w.id}')" class="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-400 dark:hover:border-neutral-600 cursor-pointer transition-all space-y-3">
+          <div class="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-400 dark:hover:border-neutral-600 cursor-pointer transition-all space-y-3">
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-neutral-500 dark:text-neutral-400">\${w.sundayDate}</span>
               <span class="text-xs font-bold px-2 py-0.5 rounded border \${badgeBg} tabular-nums">\${pct}% Done</span>
             </div>
             <div>
-              <h4 class="text-base font-bold text-neutral-900 dark:text-white">\${w.title}</h4>
+              <h3 class="text-base font-bold text-neutral-900 dark:text-white"><button type="button" onclick="inspectWeek('\${w.id}')">\${w.title}</button></h3>
               <p class="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">\${w.focusGoal || 'No goal set'}</p>
             </div>
             <div class="grid grid-cols-3 gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800 text-center">
@@ -902,6 +929,10 @@ export function generateStandaloneHtml(): string {
       if (chartInstance) renderChart();
     }
 
+    document.querySelectorAll('dialog').forEach(dialog => {
+      dialog.addEventListener('close', () => { document.body.style.overflow = ''; });
+      dialog.addEventListener('cancel', () => { document.body.style.overflow = ''; });
+    });
     window.onload = init;
   </script>
 </body>
