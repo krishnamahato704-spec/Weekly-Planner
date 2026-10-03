@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ProgramTab, 
   SchoolInternshipTask, 
@@ -62,19 +62,32 @@ export const ProgramTrackView: React.FC<ProgramTrackViewProps> = ({
 
   // Calculations for SI Tasks (if B.Ed)
   const siTasks = program.siTasks || [];
-  const totalSiTarget = siTasks.reduce((acc, t) => acc + t.targetCount, 0);
-  const totalSiCompleted = siTasks.reduce((acc, t) => acc + Math.min(t.currentCount, t.targetCount), 0);
+  const { totalSiTarget, totalSiCompleted } = useMemo(() => {
+    let totalSiTarget = 0;
+    let totalSiCompleted = 0;
+    for (const task of program.siTasks ?? []) {
+      totalSiTarget += task.targetCount;
+      totalSiCompleted += Math.min(task.currentCount, task.targetCount);
+    }
+    return { totalSiTarget, totalSiCompleted };
+  }, [program.siTasks]);
   const siPercentage = totalSiTarget === 0 ? 0 : Math.round((totalSiCompleted / totalSiTarget) * 100);
 
   // Calculations for Subjects & Chapters
-  const allChapters = (program.subjects || []).flatMap((s) => s.chapters);
-  const totalChapters = allChapters.length;
-  const finishedChapters = allChapters.filter((c) => c.isFinished).length;
+  const { totalChapters, finishedChapters, completedChecklistItems } = useMemo(() => {
+    let totalChapters = 0;
+    let finishedChapters = 0;
+    let completedChecklistItems = 0;
+    for (const subject of program.subjects ?? []) {
+      for (const chapter of subject.chapters) {
+        totalChapters++;
+        if (chapter.isFinished) finishedChapters++;
+        completedChecklistItems += Number(!!chapter.readingNotes) + Number(!!chapter.deepStudy) + Number(!!chapter.revision);
+      }
+    }
+    return { totalChapters, finishedChapters, completedChecklistItems };
+  }, [program.subjects]);
   const totalChecklistItems = totalChapters * 3;
-  const completedChecklistItems = allChapters.reduce(
-    (acc, c) => acc + (c.readingNotes ? 1 : 0) + (c.deepStudy ? 1 : 0) + (c.revision ? 1 : 0),
-    0
-  );
   const chaptersPercentage = totalChecklistItems === 0
     ? 0
     : Math.round((completedChecklistItems / totalChecklistItems) * 100);

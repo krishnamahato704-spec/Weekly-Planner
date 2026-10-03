@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar, Check, X, RefreshCw, Shield, AlertCircle, ExternalLink } from 'lucide-react';
 import { GoogleCalendarIntegrationConfig } from '../types';
+import { useTimeout } from '../hooks/useTimeout';
 
 interface GoogleCalendarSettingsModalProps {
   isOpen: boolean;
@@ -19,6 +20,13 @@ export const GoogleCalendarSettingsModal: React.FC<GoogleCalendarSettingsModalPr
 }) => {
   const [localConfig, setLocalConfig] = useState<GoogleCalendarIntegrationConfig>(config);
   const [isSimulatingConnect, setIsSimulatingConnect] = useState(false);
+  const { schedule, cancel } = useTimeout();
+  useEffect(() => {
+    if (!isOpen) {
+      cancel();
+      setIsSimulatingConnect(false);
+    }
+  }, [isOpen, cancel]);
 
   if (!isOpen) return null;
 
@@ -35,7 +43,7 @@ export const GoogleCalendarSettingsModal: React.FC<GoogleCalendarSettingsModalPr
       onShowToast('Google Calendar disconnected.');
     } else {
       setIsSimulatingConnect(true);
-      setTimeout(() => {
+      schedule(() => {
         setIsSimulatingConnect(false);
         const updated: GoogleCalendarIntegrationConfig = {
           ...localConfig,

@@ -78,11 +78,12 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    setTimeout(() => {
+    const focusTimer = setTimeout(() => {
       closeButtonRef.current?.focus();
     }, 50);
 
     return () => {
+      clearTimeout(focusTimer);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);

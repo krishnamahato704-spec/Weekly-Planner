@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import confetti from 'canvas-confetti';
+import React, { lazy, Suspense, useCallback, useState, useEffect, useMemo } from 'react';
+import { useTimeout } from './hooks/useTimeout';
+import { updateTaskInWeeks } from './utils/taskUtils';
 import {
   WeekPlan,
   Task,
@@ -8,30 +9,13 @@ import {
   ProgramTab,
   SpacedRevisionSchedule,
   ReminderPreferences,
-  ChapterRevisionDueInfo,
 } from './types';
-import { HANDWRITTEN_NOTEBOOK_TASKS, getSundaySep27Week } from './utils/sampleData';
+import { getSundaySep27Week } from './utils/sampleData';
 import { INITIAL_PROGRAM_TABS } from './utils/academicProgramsData';
 import { formatWeekTitle, getSunday, toDateKey, formatWeekRange, getNextSunday, parseDateKey } from './utils/dateUtils';
 import { Navbar } from './components/Navbar';
 import { CurrentWeekView } from './components/CurrentWeekView';
-import { CalendarView } from './components/CalendarView';
-import { ProgressBoard } from './components/ProgressBoard';
-import { ProgramTrackView } from './components/ProgramTrackView';
-import { NcertSocialScienceView } from './components/NcertSocialScienceView';
-import { DashboardReportView } from './components/DashboardReportView';
-import { AdvancedAnalyticsView } from './components/AdvancedAnalyticsView';
-import { RevisionReminderCenterModal } from './components/RevisionReminderCenterModal';
-import { UnifiedBackupModal, FullBackupData } from './components/UnifiedBackupModal';
-import { NcertAddToWeeklyPlanModal } from './components/NcertAddToWeeklyPlanModal';
-import { CleanSlateModal } from './components/CleanSlateModal';
-import { NcertLinkedCompletionPrompt } from './components/NcertLinkedCompletionPrompt';
-import { AddProgramModal } from './components/AddProgramModal';
-import { NewWeekModal } from './components/NewWeekModal';
-import { TaskModal } from './components/TaskModal';
-import { NotebookReferenceModal } from './components/NotebookReferenceModal';
-import { StandaloneExportModal } from './components/StandaloneExportModal';
-import { UploadHandwrittenPlanModal } from './components/UploadHandwrittenPlanModal';
+import type { FullBackupData } from './components/UnifiedBackupModal';
 import {
   loadRevisionSchedule,
   saveRevisionSchedule,
@@ -50,15 +34,31 @@ import {
   saveNcertNotes,
   NcertProgressStore,
   NcertNotesStore,
-  ChapterNoteData,
   TOTAL_NCERT_TASKS,
-  ALL_NCERT_CHAPTERS,
   NCERT_STORAGE_KEY,
   getAllFlatChapters,
   NcertFlatChapter,
 } from './utils/ncertData';
 import { Sparkles, Plus, GraduationCap } from 'lucide-react';
-import { NavDestination } from './components/MobileNavDrawer';
+import type { NavDestination } from './components/MobileNavDrawer';
+
+const CalendarView = lazy(() => import('./components/CalendarView').then((module) => ({ default: module.CalendarView })));
+const ProgressBoard = lazy(() => import('./components/ProgressBoard').then((module) => ({ default: module.ProgressBoard })));
+const ProgramTrackView = lazy(() => import('./components/ProgramTrackView').then((module) => ({ default: module.ProgramTrackView })));
+const NcertSocialScienceView = lazy(() => import('./components/NcertSocialScienceView').then((module) => ({ default: module.NcertSocialScienceView })));
+const DashboardReportView = lazy(() => import('./components/DashboardReportView').then((module) => ({ default: module.DashboardReportView })));
+const AdvancedAnalyticsView = lazy(() => import('./components/AdvancedAnalyticsView').then((module) => ({ default: module.AdvancedAnalyticsView })));
+const RevisionReminderCenterModal = lazy(() => import('./components/RevisionReminderCenterModal').then((module) => ({ default: module.RevisionReminderCenterModal })));
+const UnifiedBackupModal = lazy(() => import('./components/UnifiedBackupModal').then((module) => ({ default: module.UnifiedBackupModal })));
+const NcertAddToWeeklyPlanModal = lazy(() => import('./components/NcertAddToWeeklyPlanModal').then((module) => ({ default: module.NcertAddToWeeklyPlanModal })));
+const CleanSlateModal = lazy(() => import('./components/CleanSlateModal').then((module) => ({ default: module.CleanSlateModal })));
+const NcertLinkedCompletionPrompt = lazy(() => import('./components/NcertLinkedCompletionPrompt').then((module) => ({ default: module.NcertLinkedCompletionPrompt })));
+const AddProgramModal = lazy(() => import('./components/AddProgramModal').then((module) => ({ default: module.AddProgramModal })));
+const NewWeekModal = lazy(() => import('./components/NewWeekModal').then((module) => ({ default: module.NewWeekModal })));
+const TaskModal = lazy(() => import('./components/TaskModal').then((module) => ({ default: module.TaskModal })));
+const NotebookReferenceModal = lazy(() => import('./components/NotebookReferenceModal').then((module) => ({ default: module.NotebookReferenceModal })));
+const StandaloneExportModal = lazy(() => import('./components/StandaloneExportModal').then((module) => ({ default: module.StandaloneExportModal })));
+const UploadHandwrittenPlanModal = lazy(() => import('./components/UploadHandwrittenPlanModal').then((module) => ({ default: module.UploadHandwrittenPlanModal })));
 
 const STORAGE_KEY = 'sunday_plan_tracker_storage_v3';
 const PROGRAMS_STORAGE_KEY = 'sunday_plan_academic_programs_v3';
@@ -187,12 +187,11 @@ export default function App() {
   // Toast notification state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const showToast = (msg: string) => {
+  const { schedule: scheduleToast } = useTimeout();
+  const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3500);
-  };
+    scheduleToast(() => setToastMessage(null), 3500);
+  }, [scheduleToast]);
 
   // Prompt for linked completion between Weekly Planner and NCERT Tracker
   const [linkedNcertPrompt, setLinkedNcertPrompt] = useState<{
@@ -283,8 +282,9 @@ export default function App() {
   }, [weeks, programs]);
 
   // Trigger celebration confetti
-  const triggerConfetti = () => {
+  const triggerConfetti = async () => {
     try {
+      const { default: confetti } = await import('canvas-confetti');
       confetti({
         particleCount: 80,
         spread: 70,
@@ -297,33 +297,16 @@ export default function App() {
 
   // Task Toggle Handler
   const handleToggleTask = (taskId: string) => {
-    let completedTask: Task | null = null;
-    let willBeCompleted = false;
+    const taskObj = allTasks.find((task) => task.id === taskId);
+    if (!taskObj) return;
+    const willBeCompleted = !taskObj.completed;
+    const completedAt = willBeCompleted ? new Date().toISOString() : undefined;
+    setWeeks((prevWeeks) => updateTaskInWeeks(prevWeeks, taskId, (task) => ({
+      ...task, completed: willBeCompleted, completedAt,
+    })));
 
-    setWeeks((prevWeeks) =>
-      prevWeeks.map((week) => {
-        const hasTask = week.tasks.some((t) => t.id === taskId);
-        if (!hasTask) return week;
-
-        const updatedTasks = week.tasks.map((task) => {
-          if (task.id === taskId) {
-            willBeCompleted = !task.completed;
-            completedTask = {
-              ...task,
-              completed: willBeCompleted,
-              completedAt: willBeCompleted ? new Date().toISOString() : undefined,
-            };
-            return completedTask;
-          }
-          return task;
-        });
-
-        return { ...week, tasks: updatedTasks };
-      })
-    );
-
-    if (willBeCompleted && completedTask) {
-      const taskObj: Task = completedTask;
+    // Linked actions belong to the event handler, not a replayable state updater.
+    if (willBeCompleted) {
       if (taskObj.ncertRef) {
         const { chapterId, activity, chapterTitle, classNum, subject } = taskObj.ncertRef;
         if (autoSyncNcert) {
@@ -357,10 +340,7 @@ export default function App() {
   // Delete task
   const handleDeleteTask = (taskId: string) => {
     setWeeks((prevWeeks) =>
-      prevWeeks.map((week) => ({
-        ...week,
-        tasks: week.tasks.filter((t) => t.id !== taskId),
-      }))
+      updateTaskInWeeks(prevWeeks, taskId, () => null)
     );
     showToast('Task removed from weekly plan');
   };
@@ -382,12 +362,7 @@ export default function App() {
   }) => {
     if (editingTask) {
       setWeeks((prevWeeks) =>
-        prevWeeks.map((week) => ({
-          ...week,
-          tasks: week.tasks.map((t) =>
-            t.id === editingTask.id ? { ...t, ...taskData } : t
-          ),
-        }))
+        updateTaskInWeeks(prevWeeks, editingTask.id, (task) => ({ ...task, ...taskData }))
       );
       setEditingTask(null);
       showToast('Task updated successfully');
@@ -441,12 +416,7 @@ export default function App() {
   // Reschedule task
   const handleRescheduleTask = (taskId: string, newDate: string) => {
     setWeeks((prevWeeks) =>
-      prevWeeks.map((week) => ({
-        ...week,
-        tasks: week.tasks.map((t) =>
-          t.id === taskId ? { ...t, scheduledDate: newDate } : t
-        ),
-      }))
+      updateTaskInWeeks(prevWeeks, taskId, (task) => ({ ...task, scheduledDate: newDate }))
     );
     showToast(`Task rescheduled to ${newDate}`);
   };
@@ -460,6 +430,7 @@ export default function App() {
     includeRecurringTasks: boolean;
   }) => {
     const initialTasks: Task[] = [];
+    const selectedTaskIds = new Set(newWeekData.selectedTaskIds);
 
     // 1. Roll over incomplete one-off tasks from previous active week
     if (newWeekData.carryOverTasks && activeWeek) {
@@ -468,8 +439,7 @@ export default function App() {
           (t) =>
             !t.completed &&
             !t.isRecurring &&
-            (newWeekData.selectedTaskIds.length === 0 ||
-              newWeekData.selectedTaskIds.includes(t.id))
+            (selectedTaskIds.size === 0 || selectedTaskIds.has(t.id))
         )
         .map((t) => ({
           ...t,
@@ -485,6 +455,7 @@ export default function App() {
     // 2. Automatically propagate weekly recurring routines (e.g. English 100 vocab + 50 idioms)
     if (newWeekData.includeRecurringTasks) {
       const recurringMap = new Map<string, Task>();
+      const initialTitles = new Set(initialTasks.map((task) => task.title.trim().toLowerCase()));
 
       // Collect recurring tasks from active week and across all weeks
       weeks.forEach((w) => {
@@ -500,11 +471,9 @@ export default function App() {
 
       recurringMap.forEach((rec) => {
         // Only add if not already in initialTasks
-        const alreadyIn = initialTasks.some(
-          (it) => it.title.trim().toLowerCase() === rec.title.trim().toLowerCase()
-        );
-
-        if (!alreadyIn) {
+        const titleKey = rec.title.trim().toLowerCase();
+        if (!initialTitles.has(titleKey)) {
+          initialTitles.add(titleKey);
           initialTasks.push({
             id: `rec-task-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
             title: rec.title,
@@ -749,6 +718,7 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+        <Suspense fallback={<div role="status" className="p-6 text-center text-slate-500">Loading view…</div>}>
         {/* ======================================================== */}
         {/* TAB 1: WEEKLY PLANNING VIEW (Primary Dashboard)         */}
         {/* ======================================================== */}
@@ -874,7 +844,6 @@ export default function App() {
                 onTriggerConfetti={triggerConfetti}
                 onFinishTaskAlert={(title) => {
                   showToast(`Target cleared: ${title}!`);
-                  triggerConfetti();
                 }}
               />
             ) : (
@@ -1039,21 +1008,26 @@ export default function App() {
             )}
           </div>
         )}
+        </Suspense>
       </main>
 
       {/* ======================================================== */}
       {/* GLOBAL MODALS                                            */}
       {/* ======================================================== */}
 
+      <Suspense fallback={<div role="status" className="fixed inset-0 z-50 grid place-items-center bg-black/50 text-white">Loading dialog…</div>}>
       {/* New Week Modal */}
+      {isNewWeekModalOpen && (
       <NewWeekModal
         isOpen={isNewWeekModalOpen}
         onClose={() => setIsNewWeekModalOpen(false)}
         weeks={weeks}
         onCreateWeek={handleCreateNewWeek}
       />
+      )}
 
       {/* Task Modal (Create & Edit) */}
+      {isTaskModalOpen && (
       <TaskModal
         isOpen={isTaskModalOpen}
         onClose={() => {
@@ -1065,8 +1039,10 @@ export default function App() {
         initialTask={editingTask}
         existingCategories={existingCategories}
       />
+      )}
 
       {/* Notebook Reference Modal */}
+      {isNotebookModalOpen && (
       <NotebookReferenceModal
         isOpen={isNotebookModalOpen}
         onClose={() => setIsNotebookModalOpen(false)}
@@ -1098,8 +1074,10 @@ export default function App() {
           showToast('Imported handwritten notebook tasks into active week!');
         }}
       />
+      )}
 
       {/* Upload Handwritten Plan Modal */}
+      {isUploadScanModalOpen && (
       <UploadHandwrittenPlanModal
         isOpen={isUploadScanModalOpen}
         onClose={() => setIsUploadScanModalOpen(false)}
@@ -1154,8 +1132,10 @@ export default function App() {
           showToast(`Created week "${newWeek.title}" from scanned plan!`);
         }}
       />
+      )}
 
       {/* Add Program Track Modal */}
+      {isAddProgramModalOpen && (
       <AddProgramModal
         isOpen={isAddProgramModalOpen}
         onClose={() => setIsAddProgramModalOpen(false)}
@@ -1166,6 +1146,7 @@ export default function App() {
           showToast(`Academic track "${newProg.title}" created!`);
         }}
       />
+      )}
 
       {/* NCERT Add to Weekly Plan Modal */}
       {ncertAddToWeeklyChapter && (
@@ -1184,12 +1165,15 @@ export default function App() {
       )}
 
       {/* Standalone Export Modal */}
+      {isExportModalOpen && (
       <StandaloneExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
       />
+      )}
 
       {/* Unified Backup & Restore Modal */}
+      {isBackupModalOpen && (
       <UnifiedBackupModal
         isOpen={isBackupModalOpen}
         onClose={() => setIsBackupModalOpen(false)}
@@ -1226,8 +1210,10 @@ export default function App() {
         }}
         onShowToast={showToast}
       />
+      )}
 
       {/* Revision Reminder Center Modal */}
+      {isRemindersCenterOpen && (
       <RevisionReminderCenterModal
         isOpen={isRemindersCenterOpen}
         onClose={() => setIsRemindersCenterOpen(false)}
@@ -1246,11 +1232,8 @@ export default function App() {
           }
         }}
         onPlanAllRevisions={(dueList) => {
-          const flatList = getAllFlatChapters();
-          dueList.forEach((info) => {
-            const ch = flatList.find((c) => c.id === info.chapterId);
-            if (ch) {
-              const newTask: Task = {
+          const chapterIds = new Set(getAllFlatChapters().map((chapter) => chapter.id));
+          const newTasks = dueList.filter((info) => chapterIds.has(info.chapterId)).map<Task>((info) => ({
                 id: `rev-task-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
                 title: `Revise: ${info.chapterTitle}`,
                 category: `NCERT Class ${info.classNum}`,
@@ -1266,18 +1249,16 @@ export default function App() {
                   chapterTitle: info.chapterTitle,
                   activity: 'revision',
                 },
-              };
-              setWeeks((prev) =>
-                prev.map((w) =>
-                  w.id === activeWeek.id ? { ...w, tasks: [newTask, ...w.tasks] } : w
-                )
-              );
-            }
-          });
-          showToast(`Planned ${dueList.length} revisions into active week!`);
+          })).reverse();
+          if (newTasks.length) {
+            setWeeks((prev) => prev.map((week) => week.id === activeWeek.id
+              ? { ...week, tasks: [...newTasks, ...week.tasks] } : week));
+          }
+          showToast(`Planned ${newTasks.length} revisions into active week!`);
           setIsRemindersCenterOpen(false);
         }}
       />
+      )}
 
       {/* Linked NCERT Sync Prompt */}
       {linkedNcertPrompt && (
@@ -1307,6 +1288,7 @@ export default function App() {
       )}
 
       {/* Clean Slate Modal */}
+      {isCleanSlateModalOpen && (
       <CleanSlateModal
         isOpen={isCleanSlateModalOpen}
         onClose={() => setIsCleanSlateModalOpen(false)}
@@ -1323,6 +1305,8 @@ export default function App() {
           showToast('Reset to clean initial state');
         }}
       />
+      )}
+      </Suspense>
     </div>
   );
 }

@@ -1,9 +1,8 @@
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { GoogleGenAI, Type } from '@google/genai';
+import type { GoogleGenAI, Part } from '@google/genai';
 
 dotenv.config();
 
@@ -12,36 +11,43 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
-  // Support JSON and base64 image payloads up to 25MB
-  app.use(express.json({ limit: '25mb' }));
-
-  // Initialize server-side Gemini client
-  const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      },
-    },
-  });
+  const apiKey = process.env.GEMINI_API_KEY;
+  let ai: GoogleGenAI | undefined;
 
   // POST /api/ai/parse-handwritten-plan
   // Accepts a base64 image or text notes and returns structured tasks
-  app.post('/api/ai/parse-handwritten-plan', async (req, res) => {
+  app.post('/api/ai/parse-handwritten-plan', express.json({ limit: '25mb' }), async (req, res) => {
+    const controller = new AbortController();
+    const cancelRequest = () => {
+      if (!res.writableEnded) controller.abort();
+    };
+    res.once('close', cancelRequest);
     try {
-      const { imageBase64, mimeType, additionalNotes } = req.body;
+      const { imageBase64, mimeType, additionalNotes } = req.body ?? {};
+
+      if ((imageBase64 != null && typeof imageBase64 !== 'string') ||
+          (mimeType != null && typeof mimeType !== 'string') ||
+          (additionalNotes != null && typeof additionalNotes !== 'string')) {
+        return res.status(400).json({ error: 'Image, MIME type, and notes must be strings.' });
+      }
 
       if (!imageBase64 && !additionalNotes) {
         return res.status(400).json({ error: 'Please provide an image of your handwritten notes or text prompt.' });
       }
 
-      if (!process.env.GEMINI_API_KEY) {
+      if (!apiKey) {
         return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
       }
 
-      const parts: any[] = [];
+      // Load the SDK on the first AI request and reuse its client thereafter.
+      const { GoogleGenAI, Type } = await import('@google/genai');
+      ai ??= new GoogleGenAI({
+        apiKey,
+        httpOptions: { timeout: 60_000, headers: { 'User-Agent': 'aistudio-build' } },
+      });
+      const parts: Part[] = [];
 
       if (imageBase64) {
         const cleanBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
@@ -75,6 +81,7 @@ ${additionalNotes ? `Additional user instructions: ${additionalNotes}` : ''}`,
           },
         ],
         config: {
+          abortSignal: controller.signal,
           responseMimeType: 'application/json',
           responseSchema: {
             type: Type.OBJECT,
@@ -106,10 +113,13 @@ ${additionalNotes ? `Additional user instructions: ${additionalNotes}` : ''}`,
         data: parsed,
       });
     } catch (err: any) {
+      if (controller.signal.aborted) return;
       console.error('Error parsing handwritten plan with Gemini:', err);
       return res.status(500).json({
         error: err.message || 'Failed to analyze handwritten notes. Please try a clearer photo or enter manually.',
       });
+    } finally {
+      res.off('close', cancelRequest);
     }
   });
 
@@ -120,12 +130,18 @@ ${additionalNotes ? `Additional user instructions: ${additionalNotes}` : ''}`,
 
   // Mount Vite middlewares in development or static serve in production
   if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
   } else {
+    // Vite puts content hashes in asset names; cache those files across visits.
+    app.use('/assets', express.static(path.resolve(__dirname, 'dist/assets'), {
+      immutable: true,
+      maxAge: '1y',
+    }));
     app.use(express.static(path.resolve(__dirname, 'dist')));
     app.get('*', (req, res) => {
       res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));

@@ -82,7 +82,8 @@ export const calculateChapterRevisionDue = (
   progressStore: NcertProgressStore,
   revisionHistory: RevisionHistoryStore = {},
   notesStore: ChapterNotesStore = {},
-  schedule: SpacedRevisionSchedule = DEFAULT_REVISION_SCHEDULE
+  schedule: SpacedRevisionSchedule = DEFAULT_REVISION_SCHEDULE,
+  todayStr: string = getTodayDateString(),
 ): ChapterRevisionDueInfo => {
   const progress = progressStore[chapter.id];
   const history: any[] =
@@ -90,7 +91,6 @@ export const calculateChapterRevisionDue = (
       ? progress!.revisionHistory!
       : revisionHistory[chapter.id] || [];
   const notesData = notesStore[chapter.id];
-  const todayStr = getTodayDateString();
 
   // If Reading or Notes not complete, it is not ready for scheduled spaced revision
   if (!progress?.reading || !progress?.notes) {
@@ -169,9 +169,10 @@ export const getAllDueRevisions = (
 ): ChapterRevisionDueInfo[] => {
   const chapters = getAllFlatChapters();
   const dueList: ChapterRevisionDueInfo[] = [];
+  const todayStr = getTodayDateString();
 
   for (const ch of chapters) {
-    const dueInfo = calculateChapterRevisionDue(ch, progressStore, revisionHistory, notesStore, schedule);
+    const dueInfo = calculateChapterRevisionDue(ch, progressStore, revisionHistory, notesStore, schedule, todayStr);
     if (dueInfo.status === 'due_today' || dueInfo.status === 'overdue') {
       dueList.push(dueInfo);
     } else if (thresholdDays > 0 && dueInfo.status === 'upcoming' && typeof dueInfo.daysRemaining === 'number' && dueInfo.daysRemaining <= thresholdDays) {

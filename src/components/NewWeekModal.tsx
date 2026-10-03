@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, Calendar, ArrowRight, CheckCircle2, AlertCircle, RotateCcw, Repeat } from 'lucide-react';
 import { Task, WeekPlan } from '../types';
 import { getNextSunday, getSunday, toDateKey, formatWeekTitle, parseDateKey } from '../utils/dateUtils';
@@ -23,9 +23,8 @@ export const NewWeekModal: React.FC<NewWeekModalProps> = ({
   onCreateWeek,
 }) => {
   // Determine suggested next Sunday date
-  const latestWeek = weeks.length > 0
-    ? [...weeks].sort((a, b) => b.sundayDate.localeCompare(a.sundayDate))[0]
-    : null;
+  const latestWeek = useMemo(() => weeks.reduce<WeekPlan | null>((latest, week) =>
+    !latest || week.sundayDate > latest.sundayDate ? week : latest, null), [weeks]);
 
   const defaultDateKey = latestWeek
     ? toDateKey(getNextSunday(parseDateKey(latestWeek.sundayDate)))
@@ -37,14 +36,14 @@ export const NewWeekModal: React.FC<NewWeekModalProps> = ({
   const [includeRecurring, setIncludeRecurring] = useState(true);
 
   // Incomplete tasks from previous week (excluding recurring tasks to avoid duplicates)
-  const previousWeekTasks: Task[] = latestWeek
+  const previousWeekTasks = useMemo(() => latestWeek
     ? latestWeek.tasks.filter((t) => !t.completed && !t.isRecurring)
-    : [];
+    : [], [latestWeek]);
 
   // Recurring tasks from latest week or across all weeks
-  const recurringTasks: Task[] = latestWeek
+  const recurringTasks = useMemo(() => latestWeek
     ? latestWeek.tasks.filter((t) => t.isRecurring)
-    : [];
+    : [], [latestWeek]);
 
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>(
     previousWeekTasks.map((t) => t.id)
