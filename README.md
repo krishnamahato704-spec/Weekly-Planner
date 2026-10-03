@@ -26,3 +26,5 @@ Build before running the tests: the production asset-delivery test reads the gen
 For production, build first and run `bun run start` with `NODE_ENV=production`. Hashed assets receive a one-year immutable cache policy; application HTML revalidates. Serve the generated build together with this server to keep `/api/ai/parse-handwritten-plan` available.
 
 See [the performance review](docs/PERFORMANCE_REVIEW.md) for the refactor, measurements, and validation limits.
+
+See [the design system](docs/DESIGN_SYSTEM.md) for layout rules, shared CSS classes, reusable components, and interface validation.

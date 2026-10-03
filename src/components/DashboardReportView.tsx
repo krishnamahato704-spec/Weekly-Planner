@@ -90,7 +90,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             <span aria-hidden="true">·</span>
             <span>Real-time Syllabus Status</span>
           </div>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-950 dark:text-white" style={{ textWrap: 'balance' }}>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-950 dark:text-white" style={{ textWrap: 'balance' }}>
             Academic Performance Audit & Report
           </h1>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
@@ -112,12 +112,12 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
       {/* 4 Global Metric Modules with Sophisticated Color Distribution */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Module 1: Total Finished Tasks */}
-        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 shadow-2xs flex flex-col justify-between">
+        <div className="surface p-5 flex flex-col justify-between">
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             Total Milestones Finished
           </span>
           <div className="my-2.5">
-            <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums font-mono">
+            <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums font-mono">
               {totalMilestonesFinished}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -130,7 +130,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
         </div>
 
         {/* Module 2: Stage 1 Reading Notes */}
-        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 shadow-2xs flex flex-col justify-between">
+        <div className="surface p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wider">
               Stage 1: Reading Notes
@@ -140,7 +140,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             </span>
           </div>
           <div className="my-2.5">
-            <div className="text-3xl font-extrabold text-slate-950 dark:text-white tabular-nums font-mono">
+            <div className="text-3xl font-bold text-slate-950 dark:text-white tabular-nums font-mono">
               {readingNotesCount}{' '}
               <span className="text-lg font-normal text-slate-400">/ {totalChapters}</span>
             </div>
@@ -157,7 +157,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
         </div>
 
         {/* Module 3: Stage 2 Deep Study */}
-        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 shadow-2xs flex flex-col justify-between">
+        <div className="surface p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
               Stage 2: Deep Study
@@ -167,7 +167,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             </span>
           </div>
           <div className="my-2.5">
-            <div className="text-3xl font-extrabold text-slate-950 dark:text-white tabular-nums font-mono">
+            <div className="text-3xl font-bold text-slate-950 dark:text-white tabular-nums font-mono">
               {deepStudyCount}{' '}
               <span className="text-lg font-normal text-slate-400">/ {totalChapters}</span>
             </div>
@@ -184,7 +184,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
         </div>
 
         {/* Module 4: Stage 3 Revision */}
-        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 shadow-2xs flex flex-col justify-between">
+        <div className="surface p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wider">
               Stage 3: Revision
@@ -194,7 +194,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
             </span>
           </div>
           <div className="my-2.5">
-            <div className="text-3xl font-extrabold text-slate-950 dark:text-white tabular-nums font-mono">
+            <div className="text-3xl font-bold text-slate-950 dark:text-white tabular-nums font-mono">
               {revisionCount}{' '}
               <span className="text-lg font-normal text-slate-400">/ {totalChapters}</span>
             </div>
@@ -316,7 +316,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-indigo-600 to-teal-400 h-full rounded-full transition-all duration-500"
+                    className="bg-indigo-600 dark:bg-indigo-400 h-full rounded-full transition-all duration-500"
                     style={{ width: `${ncertPercent}%` }}
                   />
                 </div>
@@ -397,7 +397,7 @@ export const DashboardReportView: React.FC<DashboardReportViewProps> = ({
         )}
 
         {/* Finished Chapters Table */}
-        <div className="divide-y divide-slate-200 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 overflow-hidden shadow-2xs">
+        <div className="surface divide-y divide-slate-200 dark:divide-slate-800 overflow-hidden">
           {filteredFinishedChapters.length === 0 && completedSiTasks.length === 0 ? (
             <div className="p-12 text-center text-xs text-slate-500 dark:text-slate-400">
               <BookOpen className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />

@@ -15,6 +15,7 @@ import { INITIAL_PROGRAM_TABS } from './utils/academicProgramsData';
 import { formatWeekTitle, getSunday, toDateKey, formatWeekRange, getNextSunday, parseDateKey } from './utils/dateUtils';
 import { Navbar } from './components/Navbar';
 import { CurrentWeekView } from './components/CurrentWeekView';
+import { PageHeader, SegmentedControl } from './components/ui/Primitives';
 import type { FullBackupData } from './components/UnifiedBackupModal';
 import {
   loadRevisionSchedule,
@@ -39,7 +40,7 @@ import {
   getAllFlatChapters,
   NcertFlatChapter,
 } from './utils/ncertData';
-import { Sparkles, Plus, GraduationCap } from 'lucide-react';
+import { Sparkles, Plus } from 'lucide-react';
 import type { NavDestination } from './components/MobileNavDrawer';
 
 const CalendarView = lazy(() => import('./components/CalendarView').then((module) => ({ default: module.CalendarView })));
@@ -283,6 +284,7 @@ export default function App() {
 
   // Trigger celebration confetti
   const triggerConfetti = async () => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     try {
       const { default: confetti } = await import('canvas-confetti');
       confetti({
@@ -675,11 +677,12 @@ export default function App() {
   }, [mainTab, progressSubView]);
 
   return (
-    <div className="min-h-screen bg-[#F1F4F9] dark:bg-[#080C14] bg-ambient-mesh text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors selection:bg-indigo-500 selection:text-white">
+    <div className="app-shell">
+      <a href="#main-content" className="skip-link">Skip to content</a>
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 animate-in slide-in-from-bottom-5 fade-in duration-200">
-          <div className="bg-slate-950/95 dark:bg-slate-900/95 text-white px-4 py-2.5 rounded-xl shadow-xl border border-slate-800 text-xs font-semibold flex items-center gap-2">
+        <div className="app-toast" role="status" aria-live="polite">
+          <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-indigo-400" />
             <span>{toastMessage}</span>
           </div>
@@ -688,12 +691,8 @@ export default function App() {
 
       {/* Primary Top Navbar */}
       <Navbar
-        mainTab={mainTab}
-        onSelectMainTab={setMainTab}
         currentSection={currentNavSection}
         onSelectDestination={handleSelectDestination}
-        programs={programs}
-        activeWeekTitle={activeWeek?.title}
         pendingTasksCount={pendingTasksCount}
         dueRevisionsCount={dueRevisionsCount}
         ncertPercent={ncertStats.percent}
@@ -702,22 +701,17 @@ export default function App() {
           setTaskModalInitialDate(undefined);
           setIsTaskModalOpen(true);
         }}
-        onOpenAddProgramModal={() => setIsAddProgramModalOpen(true)}
-        onOpenNewWeekModal={() => setIsNewWeekModalOpen(true)}
         onOpenNotebookModal={() => setIsNotebookModalOpen(true)}
         onOpenUploadScanModal={() => setIsUploadScanModalOpen(true)}
         onOpenExportModal={() => setIsExportModalOpen(true)}
-        onOpenCleanSlateModal={() => setIsCleanSlateModalOpen(true)}
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
         onOpenRemindersCenter={() => setIsRemindersCenterOpen(true)}
-        autoSyncNcert={autoSyncNcert}
-        onToggleAutoSyncNcert={() => setAutoSyncNcert(!autoSyncNcert)}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      <main id="main-content" tabIndex={-1} className="app-main space-y-6">
         <Suspense fallback={<div role="status" className="p-6 text-center text-slate-500">Loading view…</div>}>
         {/* ======================================================== */}
         {/* TAB 1: WEEKLY PLANNING VIEW (Primary Dashboard)         */}
@@ -765,55 +759,16 @@ export default function App() {
         {/* ======================================================== */}
         {mainTab === 'academic_tracks' && (
           <div className="space-y-6">
-            {/* Tracks Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-xs font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider">
-                  <GraduationCap className="w-4 h-4" />
-                  <span>Academic Curriculum & Syllabus Tracker</span>
-                </div>
-                <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white">
-                  Academic Tracks
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                  Track 3-stage chapter progress (Reading & Notes, Deep Study, Revision) for B.Ed, M.A. History, CTET, UGC NET, and Canva.
-                </p>
-              </div>
-
-              {/* Sub-navigation & Add Track button */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
-                  <button
-                    onClick={() => setAcademicSubView('track')}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${
-                      academicSubView === 'track'
-                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
-                    }`}
-                  >
-                    Curriculum View
-                  </button>
-                  <button
-                    onClick={() => setAcademicSubView('audit')}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${
-                      academicSubView === 'audit'
-                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
-                    }`}
-                  >
-                    Audit Report
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => setIsAddProgramModalOpen(true)}
-                  className="px-3 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Track</span>
-                </button>
-              </div>
-            </div>
+            <PageHeader eyebrow="Your study tracks" title="Academic Tracks"
+              description="Follow each chapter from reading and deep study to revision."
+              actions={<>
+                <select className="field w-auto max-w-full" aria-label="Select academic track" value={currentSelectedProgram.id} onChange={event => setSelectedProgramId(event.target.value)}>
+                  {programs.map(program => <option key={program.id} value={program.id}>{program.title}</option>)}
+                </select>
+                <button type="button" className="button button-primary" onClick={() => setIsAddProgramModalOpen(true)}><Plus size={16} />Add Track</button>
+              </>} />
+            <div className="w-fit max-w-full"><SegmentedControl label="Academic view" value={academicSubView} onChange={setAcademicSubView}
+              options={[{ value: 'track', label: 'Curriculum View' }, { value: 'audit', label: 'Audit Report' }]} /></div>
 
             {academicSubView === 'track' ? (
               <ProgramTrackView
@@ -921,39 +876,8 @@ export default function App() {
         {/* ======================================================== */}
         {mainTab === 'progress' && (
           <div className="space-y-6">
-            {/* View Sub-Tabs */}
-            <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 w-fit text-xs font-bold">
-              <button
-                onClick={() => setProgressSubView('analytics')}
-                className={`px-3.5 py-1.5 rounded-lg transition-all ${
-                  progressSubView === 'analytics'
-                    ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
-                }`}
-              >
-                Analytics & Velocity
-              </button>
-              <button
-                onClick={() => setProgressSubView('velocity')}
-                className={`px-3.5 py-1.5 rounded-lg transition-all ${
-                  progressSubView === 'velocity'
-                    ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
-                }`}
-              >
-                Multi-Week History
-              </button>
-              <button
-                onClick={() => setProgressSubView('audit')}
-                className={`px-3.5 py-1.5 rounded-lg transition-all ${
-                  progressSubView === 'audit'
-                    ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
-                }`}
-              >
-                Audit Report
-              </button>
-            </div>
+            <div className="w-fit max-w-full"><SegmentedControl label="Progress view" value={progressSubView} onChange={setProgressSubView}
+              options={[{ value: 'analytics', label: 'Analytics & Velocity' }, { value: 'velocity', label: 'Multi-Week History' }, { value: 'audit', label: 'Audit Report' }]} /></div>
 
             {progressSubView === 'analytics' && (
               <AdvancedAnalyticsView
