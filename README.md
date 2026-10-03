@@ -45,3 +45,20 @@ bun run test:site
 ```
 
 This produces a Cloudflare-compatible Worker at `dist/server/index.js` with the client assets embedded. Keep the normal `build` and `start` commands for Express hosting. Both runtimes use the same optional Gemini transcription parser.
+
+## Netlify deployment
+
+The existing project is `weekly-plannerkrissh` at [weekly-plannerkrissh.netlify.app](https://weekly-plannerkrissh.netlify.app). Its project ID is `1a175af2-054a-4138-820e-66c46b23b200`.
+
+`netlify.toml` builds the Vite client into `dist` and bundles `netlify/functions/api.mts`. The function serves `/api/health` and `/api/ai/parse-handwritten-plan`, reusing the same validation and transcription parser as the other runtimes. Security headers apply to static files and API responses. This deployment caps JSON uploads at 4 MiB and returns a timeout before Netlify's function deadline. The image upload dialog checks the deployment's limit before sending a request.
+
+For local development, install the Netlify CLI and run `netlify dev`. To publish the current checkout to the existing project:
+
+```sh
+netlify link --id 1a175af2-054a-4138-820e-66c46b23b200
+netlify deploy --prod
+```
+
+Keep `GEMINI_API_KEY` and `TRANSCRIPTION_ACCESS_TOKEN` in Netlify environment variables with Functions scope. Without both configured correctly, image transcription stays unavailable with a readable error; task entry and the rest of the planner work normally. Do not put these secrets in `netlify.toml` or `VITE_` variables.
+
+A manual deployment preserves the project's GitHub connection. Git deployments follow the production branch configured in Netlify, so merge reviewed changes into that branch before relying on subsequent automatic builds. Planner records are stored in each browser; publishing does not copy records between hosting origins.

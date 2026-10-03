@@ -14,8 +14,14 @@ import {
   FileText
 } from 'lucide-react';
 import { Priority, Task } from '../types';
-import { IMAGE_MIME_TYPES, validateTranscriptionInput, validateTranscription } from '../utils/transcription';
+import { IMAGE_MIME_TYPES, MAX_IMAGE_BYTES, validateTranscriptionInput, validateTranscription } from '../utils/transcription';
 import { parseBoundedJson } from '../utils/dataValidation';
+
+const configuredBodyLimit = Number(import.meta.env.VITE_MAX_TRANSCRIPTION_BODY_BYTES);
+const bodyLimit = Number.isSafeInteger(configuredBodyLimit) && configuredBodyLimit > 65536
+  ? Math.min(configuredBodyLimit, 25 * 1024 * 1024) : 25 * 1024 * 1024;
+const imageLimit = Math.min(MAX_IMAGE_BYTES, Math.floor((bodyLimit - 65536) * 3 / 4));
+const imageLimitLabel = Math.floor(imageLimit / 1024 / 1024 * 10) / 10;
 
 interface ParsedTask {
   title: string;
@@ -90,9 +96,9 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
       setErrorMessage('Please upload a valid image file (JPG, PNG, WEBP).');
       return;
     }
-    // Base64 adds about a third to the file size; leave room in the 25 MB API body limit.
-    if (file.size > 16 * 1024 * 1024) {
-      setErrorMessage('Please choose an image smaller than 16 MB.');
+    // Base64 adds about a third to the file size; allow for JSON fields as well.
+    if (file.size > imageLimit) {
+      setErrorMessage(`Please choose an image smaller than ${imageLimitLabel} MiB.`);
       return;
     }
 
@@ -132,17 +138,22 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
     setErrorMessage(null);
 
     try {
+      const body = JSON.stringify({
+        imageBase64: imagePreview,
+        mimeType: imageFile?.type || 'image/jpeg',
+        additionalNotes: 'Strictly extract all handwritten tasks. Treat "Re J" as "Reflective Journal".',
+      });
+      if (new TextEncoder().encode(body).byteLength > bodyLimit) {
+        throw new Error('The selected image is too large to upload. Choose a smaller image.');
+      }
       const res = await fetch('/api/ai/parse-handwritten-plan', {
         method: 'POST',
         signal: controller.signal,
         headers: { 'Content-Type': 'application/json', ...(accessCode ? { Authorization: `Bearer ${accessCode}` } : {}) },
-        body: JSON.stringify({
-          imageBase64: imagePreview,
-          mimeType: imageFile?.type || 'image/jpeg',
-          additionalNotes: 'Strictly extract all handwritten tasks. Treat "Re J" as "Reflective Journal".',
-        }),
+        body,
       });
 
+      if (res.status === 413) throw new Error('The selected image is too large to upload. Choose a smaller image.');
       if (!res.headers.get('content-type')?.includes('application/json')) throw new Error('Image transcription is unavailable. Add tasks manually or try again later.');
       const data = parseBoundedJson(await res.text(), 1024 * 1024) as { error?: unknown; data?: unknown };
       if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('The transcription service returned an invalid response. Try again or add tasks manually.');
@@ -280,7 +291,7 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
                 aria-describedby={`${fieldId}-upload-help`}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 /></>
-                <span id={`${fieldId}-upload-help`} className="sr-only">Select a JPG, PNG, or WEBP image up to 16 MiB.</span>
+                <span id={`${fieldId}-upload-help`} className="sr-only">Select a JPG, PNG, or WEBP image up to {imageLimitLabel} MiB.</span>
 
               {imagePreview ? (
                 <div className="space-y-3">
@@ -303,7 +314,7 @@ export const UploadHandwrittenPlanModal: React.FC<UploadHandwrittenPlanModalProp
                       Upload photo of your notebook / handwritten plan
                     </p>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                      Browse or drop a JPG, PNG, or WEBP image, up to 16 MiB.
+                      Browse or drop a JPG, PNG, or WEBP image, up to {imageLimitLabel} MiB.
                     </p>
                   </div>
                 </div>

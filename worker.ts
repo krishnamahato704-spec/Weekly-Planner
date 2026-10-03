@@ -1,5 +1,6 @@
+import { readJsonBody } from './server/requestBody';
 import { createHandwritingParser } from './server/handwriting';
-import { HandwritingError, MAX_BODY_BYTES, authorizeTranscription, createRequestGate, safeApiError, securityHeaders, validateApiRequest } from './server/security';
+import { authorizeTranscription, createRequestGate, safeApiError, securityHeaders, validateApiRequest } from './server/security';
 
 // Filled by build-site.mjs. The Worker is self-contained and needs no asset binding.
 declare const __PLANNER_ASSETS__: Record<string, { body: string; contentType: string }>;
@@ -8,33 +9,6 @@ const enterRequest = createRequestGate();
 let configuredKey: string | undefined;
 let parseHandwriting = createHandwritingParser();
 interface Environment { GEMINI_API_KEY?: string; TRANSCRIPTION_ACCESS_TOKEN?: string }
-
-async function readJson(request: Request): Promise<unknown> {
-  const rawLength = request.headers.get('content-length');
-  if (rawLength && (!/^\d+$/.test(rawLength) || Number(rawLength) > MAX_BODY_BYTES)) throw new HandwritingError(413, 'Planner data exceeds the 25 MiB request limit.');
-  const reader = request.body?.getReader();
-  if (!reader) throw new HandwritingError(400, 'Planner data must be valid JSON.');
-  let timer: ReturnType<typeof setTimeout>;
-  const timeout = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new HandwritingError(408, 'The upload took too long. Try a smaller image.')), 30_000); });
-  const decoder = new TextDecoder('utf-8', { fatal: true });
-  let text = '', bytes = 0;
-  try {
-    while (true) {
-      const { done, value } = await Promise.race([reader.read(), timeout]);
-      if (done) break;
-      bytes += value.byteLength;
-      if (bytes > MAX_BODY_BYTES) throw new HandwritingError(413, 'Planner data exceeds the 25 MiB request limit.');
-      text += decoder.decode(value, { stream: true });
-    }
-    text += decoder.decode();
-    try { return JSON.parse(text); }
-    catch { throw new HandwritingError(400, 'Planner data must be valid JSON.'); }
-  } catch (error) {
-    await reader.cancel().catch(() => {});
-    if (error instanceof HandwritingError) throw error;
-    throw new HandwritingError(400, 'The planner upload could not be read.');
-  } finally { clearTimeout(timer!); reader.releaseLock(); }
-}
 
 async function handleRequest(request: Request, env: Environment): Promise<Response> {
   const url = new URL(request.url);
@@ -49,7 +23,7 @@ async function handleRequest(request: Request, env: Environment): Promise<Respon
       validateApiRequest(request.headers.get('origin'), request.headers.get('sec-fetch-site'), request.headers.get('content-type'), url.origin);
       release = enterRequest(request.headers.get('CF-Connecting-IP') || 'local');
       await authorizeTranscription(env.GEMINI_API_KEY, env.TRANSCRIPTION_ACCESS_TOKEN, request.headers.get('authorization'));
-      const payload = await readJson(request);
+      const payload = await readJsonBody(request);
       if (env.GEMINI_API_KEY !== configuredKey) {
         configuredKey = env.GEMINI_API_KEY;
         parseHandwriting = createHandwritingParser(configuredKey);
