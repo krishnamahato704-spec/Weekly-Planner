@@ -17,7 +17,7 @@ import {
   SpacedRevisionSchedule,
   ReminderPreferences,
 } from './types';
-import { getSundaySep27Week } from './utils/sampleData';
+import { getStarterWeek, STARTER_WEEK_DATE } from './utils/sampleData';
 import { INITIAL_PROGRAM_TABS } from './utils/academicProgramsData';
 import { formatWeekTitle, getSunday, toDateKey, formatWeekRange, getNextSunday, parseDateKey } from './utils/dateUtils';
 import { Navbar } from './components/Navbar';
@@ -84,19 +84,16 @@ export default function App() {
   const [weeks, setWeeks] = useState<WeekPlan[]>(() => readStored(
     [STORAGE_KEY, 'sunday_plan_tracker_storage_v2', 'sunday_plan_tracker_storage_v1'],
     value => { const plans = validateWeeks(value); if (!plans.length) throw new Error('Empty weekly plans'); return plans; },
-    [getSundaySep27Week()],
+    [getStarterWeek()],
   ));
 
   // Track active week ID
   const [activeWeekId, setActiveWeekId] = useState<string>(() => {
-    if (weeks.some((w) => w.id === '2026-09-27')) {
-      return '2026-09-27';
-    }
     if (weeks.length > 0) {
       const sorted = [...weeks].sort((a, b) => b.sundayDate.localeCompare(a.sundayDate));
       return sorted[0].id;
     }
-    return '2026-09-27';
+    return STARTER_WEEK_DATE;
   });
 
   // Academic Program Tabs
@@ -223,7 +220,7 @@ export default function App() {
 
   // Active week lookup
   const activeWeek = useMemo(() => {
-    return weeks.find((w) => w.id === activeWeekId) || weeks[0] || getSundaySep27Week();
+    return weeks.find((w) => w.id === activeWeekId) || weeks[0] || getStarterWeek();
   }, [weeks, activeWeekId]);
 
   // All tasks across all weeks
@@ -643,7 +640,7 @@ export default function App() {
   };
   const resetPlannerData = (section: 'weekly' | 'ncert' | 'study' | 'entire') => {
     if (section === 'entire') {
-      handleRestoreFullBackup({ weeks: [getSundaySep27Week()], activeWeekId: '2026-09-27', programs: INITIAL_PROGRAM_TABS, ncertProgress: {}, ncertNotes: {}, studySessions: [], goals: DEFAULT_STUDY_GOALS, dailyCapacity: DEFAULT_DAILY_CAPACITY, calendarConfig: DEFAULT_GOOGLE_CALENDAR_CONFIG, revisionSchedule: DEFAULT_REVISION_SCHEDULE, reminderPreferences: DEFAULT_REMINDER_PREFERENCES, preferences: { isDarkMode, autoSyncNcert: false } }, 'replace');
+      handleRestoreFullBackup({ weeks: [getStarterWeek()], activeWeekId: STARTER_WEEK_DATE, programs: INITIAL_PROGRAM_TABS, ncertProgress: {}, ncertNotes: {}, studySessions: [], goals: DEFAULT_STUDY_GOALS, dailyCapacity: DEFAULT_DAILY_CAPACITY, calendarConfig: DEFAULT_GOOGLE_CALENDAR_CONFIG, revisionSchedule: DEFAULT_REVISION_SCHEDULE, reminderPreferences: DEFAULT_REMINDER_PREFERENCES, preferences: { isDarkMode, autoSyncNcert: false } }, 'replace');
       removeStored(ACTIVE_SESSION_STORAGE_KEY);
       [...WEEK_KEYS.slice(1), ...PROGRAM_KEYS.slice(1), ...NCERT_KEYS.slice(1), 'ncertChapterNotes'].forEach(removeStored);
     } else if (section === 'weekly') {

@@ -62,7 +62,7 @@ export const CleanSlateModal: React.FC<CleanSlateModalProps> = ({
           </div>
           <ul className="space-y-1.5 text-slate-600 dark:text-slate-400 list-disc list-inside">
             <li>
-              <strong className="text-slate-800 dark:text-slate-200">Week of Sunday, Sep 27</strong> with the 9 starter notebook tasks.
+              <strong className="text-slate-800 dark:text-slate-200">Week of Sunday, Oct 4</strong> with the 9 starter notebook tasks.
             </li>
             <li>
               Default syllabus tracks (B.Ed, MA History, CTET, UGC NET, Canva & NCERT Classes 6–12). Custom tracks are removed.

@@ -140,15 +140,15 @@ export function generateStandaloneHtml(): string {
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-neutral-200 dark:border-neutral-800">
         <div>
           <div class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-1">
-            <span id="current-week-range">Sep 27 – Oct 3, 2026</span>
+            <span id="current-week-range">Oct 4 – Oct 10, 2026</span>
             <span>·</span>
             <span>7-Day Cycle</span>
           </div>
           <h1 id="current-week-title" class="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            Week of Sunday, Sep 27
+            Week of Sunday, Oct 4
           </h1>
           <p id="current-week-goal" class="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
-            Focus: Weekly Plan (Till 3 October) - Action Research, NCERT 6 & 7, CDP and NET prep
+            Focus: Weekly Plan (4–10 October) - Action Research, NCERT 6 & 7, CDP and NET prep
           </p>
         </div>
 
@@ -453,10 +453,10 @@ export function generateStandaloneHtml(): string {
 
     const SAMPLE_WEEKS = [
       {
-        id: '2026-09-27',
-        sundayDate: '2026-09-27',
-        title: 'Week of Sunday, Sep 27',
-        focusGoal: 'Weekly Plan (Till 3 October) - Action Research, NCERT 6 & 7, CDP and NET prep',
+        id: '2026-10-04',
+        sundayDate: '2026-10-04',
+        title: 'Week of Sunday, Oct 4',
+        focusGoal: 'Weekly Plan (4–10 October) - Action Research, NCERT 6 & 7, CDP and NET prep',
         tasks: [
           { id: 'v1', title: 'Finalize - Action Research Diagnostic Test', category: 'Research', priority: 'High', completed: false, notes: 'Complete test methodology & diagnostic rubrics (Till Oct 3)' },
           { id: 'v2', title: 'Reflective Journal (Re J) -> 1', category: 'Study', priority: 'High', completed: false, notes: 'Write & submit Reflective Journal entry 1' },
@@ -492,7 +492,7 @@ export function generateStandaloneHtml(): string {
         }
       } else { appData = normalizeExportData(SAMPLE_WEEKS); saveData(); }
 
-      activeWeekId = appData[appData.length - 1]?.id || '2026-09-27';
+      activeWeekId = appData[appData.length - 1]?.id || '2026-10-04';
       
       // Sunday check
       if (new Date().getDay() === 0) {

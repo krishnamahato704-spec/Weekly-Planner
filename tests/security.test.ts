@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { getSundaySep27Week } from '../src/utils/sampleData';
+import { getStarterWeek, STARTER_WEEK_DATE } from '../src/utils/sampleData';
 import { INITIAL_PROGRAM_TABS } from '../src/utils/academicProgramsData';
 import { parseBoundedJson, safeExternalUrl, validateBackup, validateWeeks, validatePrograms, validateGoals, validateActiveSession, validateNcertNotes } from '../src/utils/dataValidation';
 import { mergeBackups, parseBackup } from '../src/utils/backup';
@@ -9,11 +9,12 @@ import { authorizeTranscription, createRequestGate, HandwritingError, safeApiErr
 import { createHandwritingParser } from '../server/handwriting';
 import { readStored, writeStored, restoreStored, retryStorage, getStorageIssues } from '../src/utils/storage';
 
-const current = () => ({ weeks: [getSundaySep27Week()], activeWeekId: '2026-09-27', programs: INITIAL_PROGRAM_TABS, ncertProgress: {} });
+const current = () => ({ weeks: [getStarterWeek()], activeWeekId: STARTER_WEEK_DATE, programs: INITIAL_PROGRAM_TABS, ncertProgress: {} });
 const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aH4kAAAAASUVORK5CYII=';
 
 test('real planner defaults and legacy backups validate without dropping programs', () => {
   const backup = validateBackup(current());
+  assert.equal(backup.weeks[0].sundayDate, '2026-10-04');
   assert.equal(backup.weeks[0].tasks.length, current().weeks[0].tasks.length);
   assert.equal(validatePrograms(INITIAL_PROGRAM_TABS).length, INITIAL_PROGRAM_TABS.length);
   assert.deepEqual(parseBackup(JSON.stringify({ app: 'WeeklyPlan', backupVersion: 5, data: current() }), current()), backup);
