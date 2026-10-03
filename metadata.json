@@ -1,0 +1,8 @@
+{
+  "name": "Sunday Plan - Weekly Task & Progress Tracker",
+  "description": "A responsive weekly task planner and analytics dashboard organized by Sunday cycles with carry-over tasks, interactive progress gauges, and multi-week history charts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
